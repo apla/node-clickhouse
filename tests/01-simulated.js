@@ -85,7 +85,7 @@ describe ("simulated queries", function () {
 	});
 
 	it ("selects using callback", function (done) {
-		var ch = new ClickHouse ({host: host, port: port});
+		var ch = new ClickHouse ({host: host, port: port, useQueryString: true});
 		ch.query ("SELECT 1", function (err, data) {
 			assert (!err);
 			assert (data.meta, "data should be Object with `data` key to represent rows");

@@ -160,32 +160,36 @@ ClickHouse.prototype.getReqParams = function () {
 	return urlObject;
 }
 
-ClickHouse.prototype.query = function (queryString, cb) {
+ClickHouse.prototype.query = function (chQuery, cb) {
 
-	queryString = queryString.trim ();
+	chQuery = chQuery.trim ();
 
 	// we're adding `queryOptions` passed for constructor if any
-	var queryObject = Object.assign ({}, this.options.queryOptions, {
-		query: queryString + (this.options.omitFormat ? '' : ' FORMAT JSONCompact')
-	});
-
-	var reqParams = this.getReqParams ();
-
-	reqParams.path += '?' + qs.stringify (this.options.queryOptions);
+	var queryObject = Object.assign ({}, this.options.queryOptions);
 
 	var reqData = {
-		query: queryString + (this.options.omitFormat ? '' : ' FORMAT JSONCompact'),
 		finalized: true // allows to write records into connection stream
 	};
 
-	if (queryString.match (/^INSERT/i)) {
+	// use query string to submit ClickHouse query — usefuful to mock CH server
+	if (this.options.useQueryString) {
+		queryObject.query = chQuery + (this.options.omitFormat ? '' : ' FORMAT JSONCompact');
+	} else {
+		reqData.query = chQuery + (this.options.omitFormat ? '' : ' FORMAT JSONCompact');
+	}
+
+	var reqParams = this.getReqParams ();
+
+	reqParams.path += '?' + qs.stringify (queryObject);
+
+	if (chQuery.match (/^INSERT/i)) {
 
 		// There is some variants according to the documentation:
 		// 1. Values already available in the query: INSERT INTO t VALUES (1),(2),(3)
 		// 2. Values must me provided with POST data: INSERT INTO t VALUES
 		// 3. Same as previous but without VALUES keyword: INSERT INTO t FORMAT Values
 		// 4. Insert from SELECT: INSERT INTO t SELECT…
-		if (queryString.match (/(?:FORMAT \w+|VALUES)$/i)) {
+		if (chQuery.match (/(?:FORMAT \w+|VALUES)$/i)) {
 			reqData.finalized = false;
 		}
 	}
