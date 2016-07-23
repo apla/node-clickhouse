@@ -22,6 +22,7 @@ before_script:
   - echo "deb http://repo.yandex.ru/clickhouse/precise stable main" | sudo tee -a /etc/apt/sources.list
   - sudo apt-get update -qq
   - sudo apt-get install clickhouse-server-common clickhouse-client -y
+  - sudo sed -i -- 's/listen_host>::/listen_host>0.0.0.0/g' /etc/clickhouse-server/config.xml
   - sudo service clickhouse-server start
   - sudo netstat -ltn
   - (tail -n 100 /var/log/clickhouse-server/clickhouse-server.err.log || exit 0)
@@ -30,4 +31,3 @@ before_script:
   - (ls -la /opt/clickhouse/data/default/ || exit 0)
   - (ls -la /opt/clickhouse/metadata/default/ || exit 0)
   - curl -v "http://127.0.0.1:8123/"
-  - curl -v -g -6 "http://[::1]:8123/"
