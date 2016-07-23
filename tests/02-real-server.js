@@ -23,20 +23,20 @@ describe ("real server queries", function () {
 
 	it ("selects using callback", function (done) {
 		var ch = new ClickHouse ({host: host, port: port, useQueryString: true});
-		ch.query ("SELECT 1", function (err, data) {
+		ch.query ("SELECT 1", function (err, result) {
 			assert (!err);
-			assert (data.meta, "data should be Object with `data` key to represent rows");
-			assert (data.data, "data should be Object with `meta` key to represent column info");
+			assert (result.meta, "result should be Object with `data` key to represent rows");
+			assert (result.data, "result should be Object with `meta` key to represent column info");
 			done ();
 		});
 	});
 
 	it ("selects using callback and query submitted in the POST body", function (done) {
 		var ch = new ClickHouse ({host: host, port: port});
-		ch.query ("SELECT 1", function (err, data) {
+		ch.query ("SELECT 1", function (err, result) {
 			assert (!err);
-			assert (data.meta, "data should be Object with `data` key to represent rows");
-			assert (data.data, "data should be Object with `meta` key to represent column info");
+			assert (result.meta, "result should be Object with `data` key to represent rows");
+			assert (result.data, "result should be Object with `meta` key to represent column info");
 			done ();
 		});
 	});
