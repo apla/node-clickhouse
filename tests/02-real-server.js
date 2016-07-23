@@ -76,5 +76,25 @@ describe ("real server queries", function () {
 		});
 	});
 
+	it ("creates a database", function (done) {
+		var ch = new ClickHouse ({host: host, port: port});
+		ch.query ("CREATE DATABASE node_clickhouse_test", function (err, result) {
+			assert (!err);
 
+			console.log (result);
+
+			done ();
+		});
+	});
+
+	after (function (done) {
+		var ch = new ClickHouse ({host: host, port: port});
+		ch.query ("DROP DATABASE node_clickhouse_test", function (err, result) {
+			assert (!err);
+
+			console.log (result);
+
+			done ();
+		});
+	});
 });
