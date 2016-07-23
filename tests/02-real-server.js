@@ -41,5 +41,40 @@ describe ("real server queries", function () {
 		});
 	});
 
+	it ("selects numbers using callback", function (done) {
+		var ch = new ClickHouse ({host: host, port: port, useQueryString: true});
+		ch.query ("SELECT number FROM system.numbers LIMIT 10", function (err, result) {
+			assert (!err);
+			assert (result.meta, "result should be Object with `data` key to represent rows");
+			assert (result.data, "result should be Object with `meta` key to represent column info");
+			assert (result.meta.constructor === Array, "metadata is an array with column descriptions");
+			assert (result.meta[0].name === "number");
+			assert (result.data.constructor === Array, "data is a row set");
+			assert (result.data[0].constructor === Array, "each row contains list of values (using FORMAT JSONCompact)");
+			assert (result.data[9][0] === "9"); // this should be corrected at database side
+			assert (result.rows === 10);
+			assert (result.rows_before_limit_at_least === 10);
+			done ();
+		});
+	});
+
+	it ("selects numbers using callback and query submitted in the POST body", function (done) {
+		var ch = new ClickHouse ({host: host, port: port});
+		ch.query ("SELECT number FROM system.numbers LIMIT 10", function (err, result) {
+			assert (!err);
+			assert (result.meta, "result should be Object with `data` key to represent rows");
+			assert (result.data, "result should be Object with `meta` key to represent column info");
+			assert (result.meta.constructor === Array, "metadata is an array with column descriptions");
+			assert (result.meta[0].name === "number");
+			assert (result.data.constructor === Array, "data is a row set");
+			assert (result.data[0].constructor === Array, "each row contains list of values (using FORMAT JSONCompact)");
+			assert (result.data[9][0] === "9"); // this should be corrected at database side
+			assert (result.rows === 10);
+			assert (result.rows_before_limit_at_least === 10);
+
+			done ();
+		});
+	});
+
 
 });
