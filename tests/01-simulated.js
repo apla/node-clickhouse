@@ -6,11 +6,6 @@ var qs   = require ('querystring');
 
 var assert = require ("assert");
 
-// var config = require ("../config");
-
-// if (!config.connections.mssql)
-//	return;
-
 var responses = {
 	"SELECT 1 FORMAT JSONCompact": {"meta": [{"name": "1", "type": "UInt8"}], "data": [[1]], "rows": 1},
 	"SHOW DATABASES FORMAT JSONCompact": {"meta": [{"name": "name", "type": "String"}], "data": [["default"], ["system"]], "rows": 3},
@@ -30,10 +25,10 @@ describe ("simulated queries", function () {
 
 			var queryString = url.parse (req.url).query;
 
-			// database query goes to the POST data
+			// test only supports db queries using queryString
 			if (!queryString) {
 				res.writeHead (200, {});
-				res.end ("Ok.");
+				res.end ("Ok.\n");
 				return;
 			}
 
@@ -79,7 +74,7 @@ describe ("simulated queries", function () {
 		var ch = new ClickHouse ({host: host, port: port});
 		ch.ping (function (err, ok) {
 			assert (!err);
-			assert (ok === 'Ok.', "ping response should be 'Ok.'");
+			assert (ok === "Ok.\n", "ping response should be 'Ok.\\n'");
 			done ();
 		});
 	});

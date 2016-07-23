@@ -9,14 +9,14 @@ var assert = require ("assert");
 describe ("real server queries", function () {
 
 	var server,
-		host = '127.0.0.1',
-		port = '8123';
+		host = process.env.CLICKHOUSE_HOST || '127.0.0.1',
+		port = process.env.CLICKHOUSE_PORT || 8123;
 
 	it ("pings", function (done) {
 		var ch = new ClickHouse ({host: host, port: port});
 		ch.ping (function (err, ok) {
 			assert (!err);
-			assert (ok === 'Ok.', "ping response should be 'Ok.'");
+			assert (ok === "Ok.\n", "ping response should be 'Ok.\\n'");
 			done ();
 		});
 	});
