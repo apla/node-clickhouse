@@ -23,4 +23,6 @@ before_script:
   - sudo apt-get update -qq
   - sudo apt-get install clickhouse-server-common clickhouse-client -y
   - sudo service clickhouse-server start
-
+  - sudo netstat -ltn
+  - curl -v "http://127.0.0.1:8123/"
+  - curl -v -g -6 "http://[::1]:8123/"
