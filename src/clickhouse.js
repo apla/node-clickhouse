@@ -89,7 +89,9 @@ function httpRequest (reqParams, reqData, cb) {
 
 			var data;
 
-			if (response.statusCode === 200 && !('content-type' in response.headers)) {
+			var contentType = response.headers['content-type'];
+
+			if (response.statusCode === 200 && (!contentType || contentType.indexOf ('text/plain') === 0)) {
 				// probably this is a ping response or any other successful response with *empty* body
 				stream.push (null);
 				cb && cb (null, str.toString ('utf8'));
@@ -174,12 +176,22 @@ ClickHouse.prototype.query = function (chQuery, cb) {
 
 	var reqParams = this.getReqParams ();
 
+	var formatSuffix = '';
+
+	// format should be added for data queries
+	if (chQuery.match (/^(?:SELECT|SHOW|DESC|DESCRIBE|EXISTS\s+TABLE)/)) {
+		formatSuffix = ' FORMAT JSONCompact';
+	} else if (chQuery.match (/^INSERT/)) {
+		// simplest format to use, only need to escape \t, \\ and \n
+		formatSuffix = ' FORMAT TabSeparated'
+	}
+
 	// use query string to submit ClickHouse query — usefuful to mock CH server
 	if (this.options.useQueryString) {
-		queryObject.query = chQuery + (this.options.omitFormat ? '' : ' FORMAT JSONCompact');
+		queryObject.query = chQuery + (this.options.omitFormat ? '' : formatSuffix);
 		reqParams.method = 'GET';
 	} else {
-		reqData.query = chQuery + (this.options.omitFormat ? '' : ' FORMAT JSONCompact');
+		reqData.query = chQuery + (this.options.omitFormat ? '' : formatSuffix);
 		reqParams.method = 'POST';
 	}
 
