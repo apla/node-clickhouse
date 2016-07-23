@@ -148,6 +148,7 @@ function ClickHouse (options) {
 ClickHouse.prototype.getReqParams = function () {
 	var urlObject = {};
 
+	// avoid to set defaults - node http module is not happy
 	"protocol auth host hostname port path localAddress headers agent createConnection".split (" ").forEach (function (k) {
 		if (this.options[k] !== undefined)
 			urlObject[k] = this.options[k];
@@ -171,14 +172,16 @@ ClickHouse.prototype.query = function (chQuery, cb) {
 		finalized: true // allows to write records into connection stream
 	};
 
+	var reqParams = this.getReqParams ();
+
 	// use query string to submit ClickHouse query — usefuful to mock CH server
 	if (this.options.useQueryString) {
 		queryObject.query = chQuery + (this.options.omitFormat ? '' : ' FORMAT JSONCompact');
+		reqParams.method = 'GET';
 	} else {
 		reqData.query = chQuery + (this.options.omitFormat ? '' : ' FORMAT JSONCompact');
+		reqParams.method = 'POST';
 	}
-
-	var reqParams = this.getReqParams ();
 
 	reqParams.path += '?' + qs.stringify (queryObject);
 
@@ -192,6 +195,8 @@ ClickHouse.prototype.query = function (chQuery, cb) {
 		if (chQuery.match (/(?:FORMAT \w+|VALUES)$/i)) {
 			reqData.finalized = false;
 		}
+
+		reqParams.method = 'POST';
 	}
 
 	var stream = httpRequest (reqParams, reqData, cb);
@@ -202,6 +207,8 @@ ClickHouse.prototype.query = function (chQuery, cb) {
 ClickHouse.prototype.ping = function (cb) {
 
 	var reqParams = this.getReqParams ();
+
+	reqParams.method = 'GET';
 
 	var stream = httpRequest (reqParams, {finalized: true}, cb);
 
