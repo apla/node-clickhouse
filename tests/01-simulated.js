@@ -30,6 +30,7 @@ describe ("simulated queries", function () {
 
 			var queryString = url.parse (req.url).query;
 
+			// database query goes to the POST data
 			if (!queryString) {
 				res.writeHead (200, {});
 				res.end ("Ok.");
@@ -47,7 +48,7 @@ describe ("simulated queries", function () {
 			}
 
 			res.writeHead (500, {"Content-Type": "text/plain; charset=UTF-8"});
-			res.end ("Hello World");
+			res.end ("Simulated error");
 		});
 
 		server.on('clientError', function (err, socket) {
@@ -76,12 +77,21 @@ describe ("simulated queries", function () {
 
 	it ("pings", function (done) {
 		var ch = new ClickHouse ({host: host, port: port});
-		ch.ping (done);
+		ch.ping (function (err, ok) {
+			assert (!err);
+			assert (ok === 'Ok.', "ping response should be 'Ok.'");
+			done ();
+		});
 	});
 
-	it ("selects", function (done) {
+	it ("selects using callback", function (done) {
 		var ch = new ClickHouse ({host: host, port: port});
-		ch.query ("SELECT 1", done);
+		ch.query ("SELECT 1", function (err, data) {
+			assert (!err);
+			assert (data.meta, "data should be Object with `data` key to represent rows");
+			assert (data.data, "data should be Object with `meta` key to represent column info");
+			done ();
+		});
 	});
 
 });
