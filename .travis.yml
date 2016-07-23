@@ -1,0 +1,26 @@
+language: node_js
+matrix:
+  include:
+    - node_js: '0.10'
+      env: _CXXAUTO=1
+#    - node_js: '0.12'
+#      env: _CXXAUTO=1
+#    - node_js: '4'
+#      env: CXX=g++-4.8
+    - node_js: '6'
+      env: CXX=g++-4.8
+sudo: required
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - gcc-4.8
+      - g++-4.8
+before_script:
+  - sudo apt-key adv --keyserver keyserver.ubuntu.com --recv E0C56BD4
+  - echo "deb http://repo.yandex.ru/clickhouse/precise stable main" | sudo tee -a /etc/apt/sources.list
+  - sudo apt-get update -qq
+  - sudo apt-get install clickhouse-server-common clickhouse-client -y
+  - sudo service clickhouse-server start
+

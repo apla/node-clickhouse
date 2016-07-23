@@ -1,15 +1,15 @@
 {
-  "name": "@apla/node-clickhouse",
+  "name": "@apla/clickhouse",
   "version": "1.0.0",
   "description": "Yandex ClickHouse database interface",
-  "main": "src/index.js",
+  "main": "src/clickhouse.js",
   "scripts": {
     "test": "mocha --recursive ./tests -R spec",
     "cover": "istanbul cover _mocha -- --recursive ./tests -R spec && codecov"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/apla/clickhouse.git"
+    "url": "git+https://github.com/apla/node-clickhouse.git"
   },
   "keywords": [
     "clickhouse",
@@ -19,7 +19,10 @@
   "author": "Ivan Baktsheev <dot.and.thing@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/apla/clickhouse/issues"
+    "url": "https://github.com/apla/node-clickhouse/issues"
   },
-  "homepage": "https://github.com/apla/clickhouse#readme"
+  "homepage": "https://github.com/apla/node-clickhouse#readme",
+  "devDependencies": {
+    "mocha": "^2.5.3"
+  }
 }
