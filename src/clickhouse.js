@@ -9,6 +9,8 @@ Object.assign = require ('object-assign');
 
 require ('@apla/buffer-indexof-polyfill');
 
+var JSONStream = require ('./json-stream');
+
 function RecordStream (options) {
 	// if (! (this instanceof RecordStream)) return new RecordStream(options);
 	options = options || {};
@@ -55,80 +57,7 @@ function httpRequest (reqParams, reqData, cb) {
 		// or https://github.com/creationix/jsonparse
 
 		// or implement it youself
-		// states are:
-		// start: { encountered, look for keys
-		// meta: meta encountered with `[`, parse everything until `]`
-		// data: data encountered with `[`, just parse every string until `]`
-		// other keys: concatenate until the end, then prepend `{` and JSON.parse
-		var state = null;
-		var columns = [];
-		var rows = [];
-		var supplementalString = '{';
-
-		var objBuffer;
-
-		function processLine (l) {
-			// console.log ("LINE>", l);
-			l = l.trim ();
-			if (!l.length)
-				return;
-
-			if (state === null) {
-				// first string should contains `{`
-				if (l === '{') {
-					state = 'topKeys';
-				}
-			} else if (state === 'topKeys') {
-				// console.log ('TOP>', l);
-				if (l === '"meta":') {
-					state = 'meta';
-				} else if (l === '"data":') {
-					state = 'data';
-				} else if (l === '"meta": [') {
-					state = 'meta-array';
-				} else if (l === '"data": [') {
-					state = 'data-array';
-				} else {
-					supplementalString += l;
-				}
-			} else if (state === 'meta') {
-				if (l === '[') {
-					state = 'meta-array';
-				}
-			} else if (state === 'data') {
-				if (l === '[') {
-					state = 'data-array';
-				}
-			} else if (state === 'meta-array') {
-				if (l.match (/^},?$/)) {
-					columns.push (JSON.parse (objBuffer + '}'));
-					objBuffer = undefined;
-				} else if (l === '{') {
-					objBuffer = l;
-				} else if (l.match (/^],?$/)) {
-
-					stream.emit ('metadata', columns);
-
-					state = 'topKeys';
-				} else {
-					objBuffer += l;
-				}
-			} else if (state === 'data-array') {
-				if (l.match (/^[\]\}],?$/) && objBuffer) {
-					rows.push (JSON.parse (objBuffer + l[0]));
-					objBuffer = undefined;
-				} else if (l === '{' || l === '[') {
-					objBuffer = l;
-				} else if (l.match (/^],?$/)) {
-					state = 'topKeys';
-				} else if (objBuffer === undefined) {
-					rows.push (JSON.parse (l[l.length - 1] !== ',' ? l : l.substr (0, l.length - 1)));
-				} else {
-					objBuffer += l;
-				}
-			}
-
-		}
+		var jsonParser = new JSONStream (stream);
 
 		//another chunk of data has been received, so append it to `str`
 		response.on ('data', function (chunk) {
@@ -149,9 +78,9 @@ function httpRequest (reqParams, reqData, cb) {
 					.slice (0, str.length + newLinePos)
 					.toString ('utf8')
 					.split ("\n")
-					.forEach (processLine);
+					.forEach (jsonParser);
 
-				rows.forEach (function (row) {
+				jsonParser.rows.forEach (function (row) {
 					// emit data
 					stream.emit ('row', row);
 
@@ -159,7 +88,7 @@ function httpRequest (reqParams, reqData, cb) {
 					stream.push (row);
 				});
 
-				rows = [];
+				jsonParser.rows = [];
 
 				str = remains;
 
@@ -191,9 +120,9 @@ function httpRequest (reqParams, reqData, cb) {
 
 			var supplemental = {};
 
-			if (columns.length) {
+			if (jsonParser.columns.length) {
 				try {
-					supplemental = JSON.parse (supplementalString + str.toString ('utf8'));
+					supplemental = JSON.parse (jsonParser.supplementalString + str.toString ('utf8'));
 				} catch (e) {
 					// TODO
 				}
@@ -203,7 +132,7 @@ function httpRequest (reqParams, reqData, cb) {
 				stream.push (null);
 
 				cb && cb (null, Object.assign ({}, supplemental, {
-					meta: columns
+					meta: jsonParser.columns
 				}));
 
 				return;
