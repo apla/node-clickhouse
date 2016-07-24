@@ -59,8 +59,12 @@ function httpRequest (reqParams, reqData, cb) {
 		// or implement it youself
 		var jsonParser = new JSONStream (stream);
 
+		var symbolsTransferred = 0;
+
 		//another chunk of data has been received, so append it to `str`
 		response.on ('data', function (chunk) {
+
+			symbolsTransferred += chunk.length;
 
 			// JSON response
 			if (
@@ -130,7 +134,8 @@ function httpRequest (reqParams, reqData, cb) {
 				stream.push (null);
 
 				cb && cb (null, Object.assign ({}, supplemental, {
-					meta: jsonParser.columns
+					meta: jsonParser.columns,
+					transferred: symbolsTransferred
 				}));
 
 				return;
@@ -139,6 +144,8 @@ function httpRequest (reqParams, reqData, cb) {
 			// one shot data parsing, should be much faster for smaller datasets
 			try {
 				data = JSON.parse (str.toString ('utf8'));
+
+				data.transferred = symbolsTransferred;
 
 				if (data.meta) {
 					stream.emit ('metadata', data.meta);
