@@ -79,8 +79,7 @@ function httpRequest (reqParams, reqData, cb) {
 
 				var remains = chunk.slice (newLinePos + 1);
 
-				var strings = Buffer.concat([str, chunk])
-					.slice (0, str.length + newLinePos)
+				Buffer.concat([str, chunk.slice (0, newLinePos)])
 					.toString ('utf8')
 					.split ("\n")
 					.forEach (jsonParser);
