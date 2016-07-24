@@ -201,7 +201,9 @@ function httpRequest (reqParams, reqData, cb) {
 				// end stream
 				stream.push (null);
 
-				cb && cb (null, null);
+				cb && cb (null, Object.assign ({}, supplemental, {
+					meta: columns
+				}));
 
 				return;
 			}
