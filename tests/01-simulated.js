@@ -8,7 +8,7 @@ var assert = require ("assert");
 
 var responses = {
 	"SELECT 1 FORMAT JSONCompact": {"meta": [{"name": "1", "type": "UInt8"}], "data": [[1]], "rows": 1},
-	"SHOW DATABASES FORMAT JSONCompact": {"meta": [{"name": "name", "type": "String"}], "data": [["default"], ["system"]], "rows": 3},
+	"SHOW DATABASES FORMAT JSONCompact": {"meta": [{"name": "name", "type": "String"}], "data": [["default"], ["system"]], "rows": 2},
 	"SELECT number FROM system.numbers LIMIT 10 FORMAT JSONCompact": {"meta":[{"name":"number","type":"UInt64"}],"data":[["0"],["1"],["2"],["3"],["4"],["5"],["6"],["7"],["8"],["9"]],"rows":10,"rows_before_limit_at_least":10},
 
 };
@@ -95,8 +95,8 @@ describe ("simulated queries", function () {
 		var ch = new ClickHouse ({host: host, port: port, useQueryString: true});
 		ch.query ("SELECT number FROM system.numbers LIMIT 10", {syncParser: true}, function (err, result) {
 			assert (!err);
-			assert (result.meta, "result should be Object with `data` key to represent rows");
-			assert (result.data, "result should be Object with `meta` key to represent column info");
+			assert (result.data, "result should be Object with `data` key to represent rows");
+			assert (result.meta, "result should be Object with `meta` key to represent column info");
 			assert (result.meta.constructor === Array, "metadata is an array with column descriptions");
 			assert (result.meta[0].name === "number");
 			assert (result.data.constructor === Array, "data is a row set");
@@ -106,6 +106,26 @@ describe ("simulated queries", function () {
 			assert (result.rows_before_limit_at_least === 10);
 			done ();
 		});
+	});
+
+	it ("selects numbers using stream", function (done) {
+		var ch = new ClickHouse ({host: host, port: port, useQueryString: true});
+		var rows = [];
+		var stream = ch.query ("SELECT number FROM system.numbers LIMIT 10", function (err, result) {
+			assert (!err);
+			assert (result.meta, "result should be Object with `meta` key to represent column info");
+			assert (result.meta.constructor === Array, "metadata is an array with column descriptions");
+			assert (result.meta[0].name === "number");
+			assert (rows[0].constructor === Array, "each row contains list of values (using FORMAT JSONCompact)");
+			assert (rows[9][0] === "9"); // this should be corrected at database side
+			assert (result.rows === 10);
+			assert (result.rows_before_limit_at_least === 10);
+			done ();
+		});
+
+		stream.on ('data', function (row) {
+			rows.push (row);
+		})
 	});
 
 

@@ -114,10 +114,10 @@ function httpRequest (reqParams, reqData, cb) {
 					objBuffer += l;
 				}
 			} else if (state === 'data-array') {
-				if (l.match (/^},?$/)) {
-					rows.push (JSON.parse (objBuffer + '}'));
+				if (l.match (/^[\]\}],?$/) && objBuffer) {
+					rows.push (JSON.parse (objBuffer + l[0]));
 					objBuffer = undefined;
-				} else if (l === '{') {
+				} else if (l === '{' || l === '[') {
 					objBuffer = l;
 				} else if (l.match (/^],?$/)) {
 					state = 'topKeys';
@@ -193,7 +193,7 @@ function httpRequest (reqParams, reqData, cb) {
 
 			if (columns.length) {
 				try {
-					supplemental = JSON.parse (supplementalString);
+					supplemental = JSON.parse (supplementalString + str.toString ('utf8'));
 				} catch (e) {
 					// TODO
 				}
