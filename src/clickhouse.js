@@ -279,12 +279,15 @@ ClickHouse.prototype.query = function (chQuery, options, cb) {
 
 	chQuery = chQuery.trim ();
 
-	if (arguments.length === 2) {
+	if (cb === undefined && options && options.constructor === Function) {
 		cb = options;
+		options = undefined;
+	}
+
+	if (!options)
 		options = {
 			queryOptions: {}
-		}
-	}
+		};
 
 	options.omitFormat  = options.omitFormat  || this.options.omitFormat  || false;
 	options.dataObjects = options.dataObjects || this.options.dataObjects || false;
