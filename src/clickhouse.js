@@ -67,6 +67,7 @@ function httpRequest (reqParams, reqData, cb) {
 				response.headers['content-type']
 				&& response.headers['content-type'].indexOf ('application/json') === 0
 				&& !reqData.syncParser
+				&& chunk.lastIndexOf ("\n") !== -1
 			) {
 
 				// store in buffer anything after
