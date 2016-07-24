@@ -76,6 +76,15 @@ describe ("real server queries", function () {
 		});
 	});
 
+	it.only ("selects from system columns", function (done) {
+		var ch = new ClickHouse ({host: host, port: port});
+		ch.query ("SELECT * FROM system.columns", function (err, result) {
+			assert (!err);
+
+			done ();
+		});
+	});
+
 	it ("creates a database", function (done) {
 		var ch = new ClickHouse ({host: host, port: port});
 		ch.query ("CREATE DATABASE node_clickhouse_test", function (err, result) {
@@ -87,6 +96,7 @@ describe ("real server queries", function () {
 		});
 	});
 
+	/*
 	after (function (done) {
 		var ch = new ClickHouse ({host: host, port: port});
 		ch.query ("DROP DATABASE node_clickhouse_test", function (err, result) {
@@ -97,4 +107,5 @@ describe ("real server queries", function () {
 			done ();
 		});
 	});
+	*/
 });

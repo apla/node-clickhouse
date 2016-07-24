@@ -1,31 +1,13 @@
 var http = require ('http');
 var url  = require ('url');
 var qs   = require ('querystring');
+var util = require ('util');
 
-var Duplex = require('stream').Duplex;
-var util = require('util');
+var Duplex = require ('stream').Duplex;
 
-if (typeof Object.assign != 'function') {
-	Object.assign = function(target) {
-		'use strict';
-		if (target == null) {
-			throw new TypeError('Cannot convert undefined or null to object');
-		}
+Object.assign = require ('object-assign');
 
-		target = Object(target);
-		for (var index = 1; index < arguments.length; index++) {
-			var source = arguments[index];
-			if (source != null) {
-				for (var key in source) {
-					if (Object.prototype.hasOwnProperty.call(source, key)) {
-						target[key] = source[key];
-					}
-				}
-			}
-		}
-		return target;
-	};
-}
+require ('@apla/buffer-indexof-polyfill');
 
 function RecordStream (options) {
 	if (! (this instanceof RecordStream)) return new RecordStream(options);
@@ -71,9 +53,101 @@ function httpRequest (reqParams, reqData, cb) {
 		// from https://github.com/jimhigson/oboe.js
 		// or https://www.npmjs.com/package/stream-json or
 		// or https://github.com/creationix/jsonparse
+
+		// or implement it youself
+		// states are:
+		// start: { encountered, look for keys
+		// meta: meta encountered with `[`, parse everything until `]`
+		// data: data encountered with `[`, just parse every string until `]`
+		// other keys: concatenate until the end, then prepend `{` and JSON.parse
+		var state = null;
+		var columns = [];
+		var rows = [];
+		var supplementalString = '{';
+
+		var objBuffer;
+
+		function processLine (l) {
+			// console.log ("processing line", l);
+			l = l.trim ();
+			if (!l.length)
+				return;
+
+			if (state === null) {
+				// first string should contains `{`
+				if (l === '{') {
+					state = 'topKeys';
+				}
+			} else if (state === 'topKeys') {
+				if (l === '"meta":') {
+					state = 'meta';
+				} else if (l === '"data":') {
+					state = 'data';
+				} else {
+					supplementalString += l;
+				}
+			} else if (state === 'meta') {
+				if (l === '[') {
+					state = 'meta-array';
+				}
+			} else if (state === 'data') {
+				if (l === '[') {
+					state = 'data-array';
+				}
+			} else if (state === 'meta-array') {
+				if (l.match (/^},?$/)) {
+					columns.push (JSON.parse (objBuffer + '}'));
+				} else if (l === '{') {
+					objBuffer = l;
+				} else if (l.match (/^],?$/)) {
+
+					stream.emit ('metadata', columns);
+
+					state = 'topKeys';
+				} else {
+					objBuffer += l;
+				}
+			} else if (state === 'data-array') {
+				if (l.match (/^],?$/)) {
+					state = 'topKeys';
+				} else {
+					rows.push (JSON.parse (l[l.length - 1] !== ',' ? l : l.substr (0, l.length - 1)));
+				}
+			}
+
+		}
+
 		//another chunk of data has been received, so append it to `str`
 		response.on ('data', function (chunk) {
-			if (str) {
+
+			// JSON response
+			if (response.headers['content-type'].indexOf ('application/json') === 0) {
+
+				// store in buffer anything after
+				var newLinePos = chunk.lastIndexOf ("\n");
+
+				var remains = chunk.slice (newLinePos + 1);
+
+				var strings = Buffer.concat([str, chunk])
+					.slice (0, str.length + newLinePos)
+					.toString ('utf8')
+					.split ("\n")
+					.forEach (processLine);
+
+				rows.forEach (function (row) {
+					// console.log ('DATA>', row);
+
+					// emit data
+					stream.emit ('row', row);
+
+					// and write to readable stream
+					stream.push (row);
+				});
+
+				str = remains;
+
+			// plaintext response
+			} else if (str) {
 				str   = Buffer.concat ([str, chunk]);
 			} else {
 				error = Buffer.concat ([error, chunk]);
@@ -98,6 +172,25 @@ function httpRequest (reqParams, reqData, cb) {
 				return;
 			}
 
+			var supplemental = {};
+
+			if (columns.length) {
+				try {
+					supplemental = JSON.parse (supplementalString);
+				} catch (e) {
+					// TODO
+				}
+				stream.supplemental = supplemental;
+
+				// end stream
+				stream.push (null);
+
+				cb && cb (null, null);
+
+				return;
+			}
+
+			// one shot data parsing, should be much faster for smaller datasets
 			try {
 				data = JSON.parse (str.toString ('utf8'));
 
@@ -107,8 +200,9 @@ function httpRequest (reqParams, reqData, cb) {
 
 				if (data.data) {
 					// no highWatermark support
-					data.data.forEach (function (record) {
-						stream.push (record);
+					data.data.forEach (function (row) {
+						stream.emit ('row', row);
+						stream.push (row);
 					});
 
 					stream.push (null);

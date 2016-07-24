@@ -22,7 +22,14 @@
     "url": "https://github.com/apla/node-clickhouse/issues"
   },
   "homepage": "https://github.com/apla/node-clickhouse#readme",
+  "dependencies": {
+    "object-assign": "^4.1.0",
+	"@apla/buffer-indexof-polyfill": "^1.1.0"
+  },
   "devDependencies": {
     "mocha": "^2.5.3"
+  },
+  "engines": {
+    "node": ">=0.10"
   }
 }
