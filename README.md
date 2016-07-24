@@ -5,6 +5,10 @@ Yandex ClickHouse database interface
 npm install @apla/clickhouse
 ```
 
+[![travis](https://travis-ci.org/apla/node-clickhouse.svg)](https://travis-ci.org/apla/node-clickhouse)
+
+[![codecov](https://codecov.io/gh/apla/node-clickhouse/branch/master/graph/badge.svg)](https://codecov.io/gh/apla/node-clickhouse)
+
 Synopsis
 ---
 
