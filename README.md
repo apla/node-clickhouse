@@ -58,3 +58,6 @@ Driver options:
  * syncParser: collect data, then parse whole response. Should be faster, but for
  large datasets all your dataset goes into memory (actually, whole response + whole dataset).
  Default: `false`
+ * dataObjects: use `FORMAT JSON` instead of `FORMAT JSONCompact` for output.
+ By default (false), you'll receive array of values for each row. If you set dataObjects
+ to true, every row will become and object with format: `{fieldName: fieldValue, …}`

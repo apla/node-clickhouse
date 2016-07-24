@@ -287,6 +287,8 @@ ClickHouse.prototype.query = function (chQuery, options, cb) {
 	}
 
 	options.omitFormat  = options.omitFormat  || this.options.omitFormat  || false;
+	options.dataObjects = options.dataObjects || this.options.dataObjects || false;
+
 	// we're adding `queryOptions` passed for constructor if any
 	var queryObject = Object.assign ({}, this.options.queryOptions, options.queryOptions);
 
@@ -301,7 +303,7 @@ ClickHouse.prototype.query = function (chQuery, options, cb) {
 
 	// format should be added for data queries
 	if (chQuery.match (/^(?:SELECT|SHOW|DESC|DESCRIBE|EXISTS\s+TABLE)/)) {
-		formatSuffix = ' FORMAT JSONCompact';
+		formatSuffix = ' FORMAT ' + (options.dataObjects ? 'JSON' : 'JSONCompact');
 	} else if (chQuery.match (/^INSERT/)) {
 		// simplest format to use, only need to escape \t, \\ and \n
 		formatSuffix = ' FORMAT TabSeparated'
