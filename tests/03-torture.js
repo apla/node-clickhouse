@@ -8,6 +8,10 @@ var assert = require ("assert");
 
 var memwatch = require('memwatch-next');
 
+// replace with it, if you want to run this test suite
+var method  = it.skip;
+var timeout = 50000;
+
 describe ("torturing", function () {
 
 	var server,
@@ -23,9 +27,9 @@ describe ("torturing", function () {
 		console.log (process.memoryUsage());
 	})
 
-	it ("selects 1 million using async parser 1", function (done) {
+	method ("selects 1 million using async parser", function (done) {
 
-		this.timeout(50000);
+		this.timeout (timeout);
 
 		var ch = new ClickHouse ({host: host, port: port, useQueryString: true});
 		var queryCount = 0;
@@ -55,9 +59,10 @@ describe ("torturing", function () {
 		lastSuite = 'async';
 	});
 
-	it.skip ("selects 1 million using sync parser 1", function (done) {
+	// enable this test separately
+	it.skip ("selects 1 million using sync parser", function (done) {
 
-		this.timeout(50000);
+		this.timeout (timeout);
 
 		var ch = new ClickHouse ({host: host, port: port, useQueryString: true});
 		var queryCount = 0;
@@ -87,9 +92,9 @@ describe ("torturing", function () {
 		lastSuite = 'sync';
 	});
 
-	it ("selects system.columns using async parser 2", function (done) {
+	method ("selects system.columns using async parser #1", function (done) {
 
-		this.timeout(50000);
+		this.timeout (timeout);
 
 		var ch = new ClickHouse ({host: host, port: port, useQueryString: true});
 		var queryCount = 0;
@@ -119,9 +124,9 @@ describe ("torturing", function () {
 		lastSuite = 'async';
 	});
 
-	it ("selects system.columns using sync parser 2", function (done) {
+	method ("selects system.columns using sync parser #1", function (done) {
 
-		this.timeout(50000);
+		this.timeout (timeout);
 
 		var ch = new ClickHouse ({host: host, port: port, useQueryString: true});
 		var queryCount = 0;
@@ -151,9 +156,9 @@ describe ("torturing", function () {
 		lastSuite = 'sync';
 	});
 
-	it ("selects system.columns using async parser 3", function (done) {
+	method ("selects system.columns using async parser #2", function (done) {
 
-		this.timeout(50000);
+		this.timeout (timeout);
 
 		var ch = new ClickHouse ({host: host, port: port, useQueryString: true});
 		var queryCount = 0;
@@ -183,9 +188,9 @@ describe ("torturing", function () {
 		lastSuite = 'async';
 	});
 
-	it ("selects system.columns using sync parser 3", function (done) {
+	method ("selects system.columns using sync parser #2", function (done) {
 
-		this.timeout(50000);
+		this.timeout (timeout);
 
 		var ch = new ClickHouse ({host: host, port: port, useQueryString: true});
 		var queryCount = 0;
