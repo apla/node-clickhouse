@@ -10,10 +10,10 @@ Object.assign = require ('object-assign');
 require ('@apla/buffer-indexof-polyfill');
 
 function RecordStream (options) {
-	if (! (this instanceof RecordStream)) return new RecordStream(options);
-	if (! options) options = {};
+	// if (! (this instanceof RecordStream)) return new RecordStream(options);
+	options = options || {};
 	options.objectMode = true;
-	Duplex.call(this, options);
+	Duplex.call (this, options);
 }
 
 util.inherits(RecordStream, Duplex);
@@ -68,7 +68,7 @@ function httpRequest (reqParams, reqData, cb) {
 		var objBuffer;
 
 		function processLine (l) {
-			// console.log ("processing line", l);
+			// console.log ("LINE>", l);
 			l = l.trim ();
 			if (!l.length)
 				return;
@@ -79,6 +79,7 @@ function httpRequest (reqParams, reqData, cb) {
 					state = 'topKeys';
 				}
 			} else if (state === 'topKeys') {
+				// console.log ('TOP>', l);
 				if (l === '"meta":') {
 					state = 'meta';
 				} else if (l === '"data":') {
