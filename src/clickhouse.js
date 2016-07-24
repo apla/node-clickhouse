@@ -83,6 +83,10 @@ function httpRequest (reqParams, reqData, cb) {
 					state = 'meta';
 				} else if (l === '"data":') {
 					state = 'data';
+				} else if (l === '"meta": [') {
+					state = 'meta-array';
+				} else if (l === '"data": [') {
+					state = 'data-array';
 				} else {
 					supplementalString += l;
 				}
@@ -97,6 +101,7 @@ function httpRequest (reqParams, reqData, cb) {
 			} else if (state === 'meta-array') {
 				if (l.match (/^},?$/)) {
 					columns.push (JSON.parse (objBuffer + '}'));
+					objBuffer = undefined;
 				} else if (l === '{') {
 					objBuffer = l;
 				} else if (l.match (/^],?$/)) {
@@ -108,10 +113,17 @@ function httpRequest (reqParams, reqData, cb) {
 					objBuffer += l;
 				}
 			} else if (state === 'data-array') {
-				if (l.match (/^],?$/)) {
+				if (l.match (/^},?$/)) {
+					rows.push (JSON.parse (objBuffer + '}'));
+					objBuffer = undefined;
+				} else if (l === '{') {
+					objBuffer = l;
+				} else if (l.match (/^],?$/)) {
 					state = 'topKeys';
-				} else {
+				} else if (objBuffer === undefined) {
 					rows.push (JSON.parse (l[l.length - 1] !== ',' ? l : l.substr (0, l.length - 1)));
+				} else {
+					objBuffer += l;
 				}
 			}
 

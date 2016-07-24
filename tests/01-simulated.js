@@ -38,6 +38,7 @@ describe ("simulated queries", function () {
 
 			if (queryObject.query in responses) {
 				res.writeHead (200, {"Content-Type": "application/json; charset=UTF-8"});
+				// console.log (JSON.stringify (responses[queryObject.query], null, "\t"));
 				res.end (JSON.stringify (responses[queryObject.query], null, "\t"));
 				return;
 			}
@@ -106,5 +107,6 @@ describe ("simulated queries", function () {
 			done ();
 		});
 	});
+
 
 });
