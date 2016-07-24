@@ -306,11 +306,23 @@ ClickHouse.prototype.query = function (chQuery, options, cb) {
 	var formatSuffix = '';
 
 	// format should be added for data queries
-	if (chQuery.match (/^(?:SELECT|SHOW|DESC|DESCRIBE|EXISTS\s+TABLE)/)) {
+	if (chQuery.match (/^(?:SELECT|SHOW|DESC|DESCRIBE|EXISTS\s+TABLE)/i)) {
 		formatSuffix = ' FORMAT ' + (options.dataObjects ? 'JSON' : 'JSONCompact');
-	} else if (chQuery.match (/^INSERT/)) {
-		// simplest format to use, only need to escape \t, \\ and \n
-		formatSuffix = ' FORMAT TabSeparated'
+	} else if (chQuery.match (/^INSERT/i)) {
+
+		// There is some variants according to the documentation:
+		// 1. Values already available in the query: INSERT INTO t VALUES (1),(2),(3)
+		// 2. Values must me provided with POST data: INSERT INTO t VALUES
+		// 3. Same as previous but without VALUES keyword: INSERT INTO t FORMAT Values
+		// 4. Insert from SELECT: INSERT INTO t SELECT…
+
+		// we need to handler 2 and 3 and not to close http stream in that cases
+		if (chQuery.match (/VALUES$/i)) {
+			reqData.finalized = false;
+
+			// simplest format to use, only need to escape \t, \\ and \n
+			formatSuffix = ' FORMAT TabSeparated';
+		}
 	}
 
 	// use query string to submit ClickHouse query — usefuful to mock CH server
@@ -323,20 +335,6 @@ ClickHouse.prototype.query = function (chQuery, options, cb) {
 	}
 
 	reqParams.path += '?' + qs.stringify (queryObject);
-
-	if (chQuery.match (/^INSERT/i)) {
-
-		// There is some variants according to the documentation:
-		// 1. Values already available in the query: INSERT INTO t VALUES (1),(2),(3)
-		// 2. Values must me provided with POST data: INSERT INTO t VALUES
-		// 3. Same as previous but without VALUES keyword: INSERT INTO t FORMAT Values
-		// 4. Insert from SELECT: INSERT INTO t SELECT…
-		if (chQuery.match (/(?:FORMAT \w+|VALUES)$/i)) {
-			reqData.finalized = false;
-		}
-
-		reqParams.method = 'POST';
-	}
 
 	var stream = httpRequest (reqParams, reqData, cb);
 

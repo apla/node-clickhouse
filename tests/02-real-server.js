@@ -32,6 +32,20 @@ describe ("real server queries", function () {
 		});
 	});
 
+	it ("returns error", function (done) {
+		var ch = new ClickHouse ({host: host, port: port, useQueryString: true});
+		var stream = ch.query ("ABCDEFGHIJKLMN", {syncParser: true}, function (err, result) {
+			// assert (err);
+			// done ();
+		});
+
+		stream.on ('error', function (err) {
+			assert (err);
+			console.log (err);
+			done();
+		});
+	});
+
 	it ("selects using callback and query submitted in the POST body", function (done) {
 		var ch = new ClickHouse ({host: host, port: port});
 		ch.query ("SELECT 1", {syncParser: true}, function (err, result) {
@@ -177,6 +191,58 @@ describe ("real server queries", function () {
 			// console.log (result);
 
 			done ();
+		});
+	});
+
+	it ("creates a table", function (done) {
+		var ch = new ClickHouse ({host: host, port: port});
+		ch.query ("CREATE TABLE node_clickhouse_test.t (a UInt8) ENGINE = Memory", function (err, result) {
+			assert (!err);
+
+			done ();
+		});
+	});
+
+	it ("drops a table", function (done) {
+		var ch = new ClickHouse ({host: host, port: port, queryOptions: {database: 'node_clickhouse_test'}});
+		ch.query ("DROP TABLE t", function (err, result) {
+			assert (!err);
+
+			done ();
+		});
+	});
+
+	it ("creates a table", function (done) {
+		var ch = new ClickHouse ({host: host, port: port, queryOptions: {database: 'node_clickhouse_test'}});
+		ch.query ("CREATE TABLE t (a UInt8) ENGINE = Memory", function (err, result) {
+			assert (!err);
+
+			done ();
+		});
+	});
+
+	it ("inserts some data", function (done) {
+		var ch = new ClickHouse ({host: host, port: port});
+		ch.query ("INSERT INTO t VALUES (1),(2),(3)", {queryOptions: {database: 'node_clickhouse_test'}}, function (err, result) {
+			assert (!err);
+
+			// let's wait a few seconds
+			setTimeout (function () {done ()}, 500);
+		});
+	});
+
+	it ("gets back data", function (done) {
+		var ch = new ClickHouse ({host: host, port: port});
+		var rows = [];
+		var stream = ch.query ("select a FROM t", {queryOptions: {database: 'node_clickhouse_test'}});
+
+		stream.on ('data', function (row) {
+			rows.push (row);
+		});
+
+		stream.on ('end', function () {
+
+			done();
 		});
 	});
 
