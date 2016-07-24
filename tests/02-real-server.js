@@ -108,7 +108,7 @@ describe ("real server queries", function () {
 
 			done ();
 		});
-		stream.on ('row', function (row) {
+		stream.on ('data', function (row) {
 			rows.push (row);
 		})
 	});

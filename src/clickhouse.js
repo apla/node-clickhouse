@@ -81,10 +81,7 @@ function httpRequest (reqParams, reqData, cb) {
 					.forEach (jsonParser);
 
 				jsonParser.rows.forEach (function (row) {
-					// emit data
-					stream.emit ('row', row);
-
-					// and write to readable stream
+					// write to readable stream
 					stream.push (row);
 				});
 
@@ -149,7 +146,6 @@ function httpRequest (reqParams, reqData, cb) {
 				if (data.data) {
 					// no highWatermark support
 					data.data.forEach (function (row) {
-						stream.emit ('row', row);
 						stream.push (row);
 					});
 
