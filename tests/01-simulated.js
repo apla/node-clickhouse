@@ -56,7 +56,7 @@ describe ("simulated queries", function () {
 			port = server.address().port;
 
 			host = host === '0.0.0.0' ? '127.0.0.1' : host;
-			host = host === '::' ? '::1' : host;
+			host = host === '::' ? '127.0.0.1' : host;
 
 			done();
 		});
