@@ -10,7 +10,8 @@ describe ("real server queries", function () {
 
 	var server,
 		host = process.env.CLICKHOUSE_HOST || '127.0.0.1',
-		port = process.env.CLICKHOUSE_PORT || 8123;
+		port = process.env.CLICKHOUSE_PORT || 8123,
+		dbCreated = false;
 
 	it ("pings", function (done) {
 		var ch = new ClickHouse ({host: host, port: port});
@@ -167,19 +168,24 @@ describe ("real server queries", function () {
 		});
 	});
 
-	it.skip ("creates a database", function (done) {
+	it ("creates a database", function (done) {
 		var ch = new ClickHouse ({host: host, port: port});
 		ch.query ("CREATE DATABASE node_clickhouse_test", function (err, result) {
 			assert (!err);
 
+			dbCreated = true;
 			// console.log (result);
 
 			done ();
 		});
 	});
 
-	/*
+
 	after (function (done) {
+
+		if (!dbCreated)
+			return done;
+
 		var ch = new ClickHouse ({host: host, port: port});
 		ch.query ("DROP DATABASE node_clickhouse_test", function (err, result) {
 			assert (!err);
@@ -189,5 +195,4 @@ describe ("real server queries", function () {
 			done ();
 		});
 	});
-	*/
 });
