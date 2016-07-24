@@ -55,3 +55,6 @@ Driver options:
  * omitFormat: `FORMAT JSONCompact` will be added by default to every query.
  You can change this behaviour by providing this option. In such case you should
  add `FORMAT JSONCompact` by yourself.
+ * syncParser: collect data, then parse whole response. Should be faster, but for
+ large datasets all your dataset goes into memory (actually, whole response + whole dataset).
+ Default: `false`

@@ -38,7 +38,7 @@ describe ("simulated queries", function () {
 
 			if (queryObject.query in responses) {
 				res.writeHead (200, {"Content-Type": "application/json; charset=UTF-8"});
-				res.end (JSON.stringify (responses[queryObject.query]));
+				res.end (JSON.stringify (responses[queryObject.query], null, "\t"));
 				return;
 			}
 
@@ -81,7 +81,7 @@ describe ("simulated queries", function () {
 
 	it ("selects using callback", function (done) {
 		var ch = new ClickHouse ({host: host, port: port, useQueryString: true});
-		ch.query ("SELECT 1", function (err, result) {
+		ch.query ("SELECT 1", {syncParser: true}, function (err, result) {
 			assert (!err);
 			assert (result.meta, "result should be Object with `data` key to represent rows");
 			assert (result.data, "result should be Object with `meta` key to represent column info");
@@ -92,7 +92,7 @@ describe ("simulated queries", function () {
 
 	it ("selects numbers using callback", function (done) {
 		var ch = new ClickHouse ({host: host, port: port, useQueryString: true});
-		ch.query ("SELECT number FROM system.numbers LIMIT 10", function (err, result) {
+		ch.query ("SELECT number FROM system.numbers LIMIT 10", {syncParser: true}, function (err, result) {
 			assert (!err);
 			assert (result.meta, "result should be Object with `data` key to represent rows");
 			assert (result.data, "result should be Object with `meta` key to represent column info");

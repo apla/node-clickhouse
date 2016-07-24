@@ -121,7 +121,11 @@ function httpRequest (reqParams, reqData, cb) {
 		response.on ('data', function (chunk) {
 
 			// JSON response
-			if (response.headers['content-type'].indexOf ('application/json') === 0) {
+			if (
+				response.headers['content-type']
+				&& response.headers['content-type'].indexOf ('application/json') === 0
+				&& !reqData.syncParser
+			) {
 
 				// store in buffer anything after
 				var newLinePos = chunk.lastIndexOf ("\n");
@@ -135,14 +139,14 @@ function httpRequest (reqParams, reqData, cb) {
 					.forEach (processLine);
 
 				rows.forEach (function (row) {
-					// console.log ('DATA>', row);
-
 					// emit data
 					stream.emit ('row', row);
 
 					// and write to readable stream
 					stream.push (row);
 				});
+
+				rows = [];
 
 				str = remains;
 
@@ -257,14 +261,23 @@ ClickHouse.prototype.getReqParams = function () {
 	return urlObject;
 }
 
-ClickHouse.prototype.query = function (chQuery, cb) {
+ClickHouse.prototype.query = function (chQuery, options, cb) {
 
 	chQuery = chQuery.trim ();
 
+	if (arguments.length === 2) {
+		cb = options;
+		options = {
+			queryOptions: {}
+		}
+	}
+
+	options.omitFormat  = options.omitFormat  || this.options.omitFormat  || false;
 	// we're adding `queryOptions` passed for constructor if any
-	var queryObject = Object.assign ({}, this.options.queryOptions);
+	var queryObject = Object.assign ({}, this.options.queryOptions, options.queryOptions);
 
 	var reqData = {
+		syncParser: options.syncParser || this.options.syncParser || false,
 		finalized: true // allows to write records into connection stream
 	};
 
@@ -282,10 +295,10 @@ ClickHouse.prototype.query = function (chQuery, cb) {
 
 	// use query string to submit ClickHouse query — usefuful to mock CH server
 	if (this.options.useQueryString) {
-		queryObject.query = chQuery + (this.options.omitFormat ? '' : formatSuffix);
+		queryObject.query = chQuery + ((options.omitFormat) ? '' : formatSuffix);
 		reqParams.method = 'GET';
 	} else {
-		reqData.query = chQuery + (this.options.omitFormat ? '' : formatSuffix);
+		reqData.query = chQuery + (options.omitFormat ? '' : formatSuffix);
 		reqParams.method = 'POST';
 	}
 
