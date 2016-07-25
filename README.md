@@ -1,4 +1,4 @@
-Yandex ClickHouse database interface
+Database interface for http://clickhouse.yandex
 ===
 
 ```
@@ -56,12 +56,13 @@ var options = {
   omitFormat: false
 };
 
-var ch = new ClickHouse (options);
+var clickHouse = new ClickHouse (options);
 ```
 
 If you provide options as string it is assumed as host parameter in connections options
 
-Connection options (accept all options documentedfor [http.request](https://nodejs.org/api/http.html#http_http_request_options_callback)):
+Connection options (accept all options documented
+for [http.request](https://nodejs.org/api/http.html#http_http_request_options_callback)):
 
  * **auth**:     authentication as `user:password`, optional
  * **host**:     host to connect, can contain port name
@@ -90,3 +91,29 @@ Driver options:
  * **dataObjects**: use `FORMAT JSON` instead of `FORMAT JSONCompact` for output.
  By default (false), you'll receive array of values for each row. If you set dataObjects
  to true, every row will become an object with format: `{fieldName: fieldValue, …}`
+
+
+### var stream = clickHouse.query (statement, [options], [callback])
+
+Query sends statement to server
+
+Stream is a regular nodejs object stream, it can be piped to process records.
+
+Stream events:
+
+ * **metadata**: when column information is parsed,
+ * **data**: when row is available,
+ * **error**: something wrong,
+ * **end**: when whole response is processed
+
+After response is processed, you can read an supplemental response data, such as
+row count via `stream.supplemental`.
+
+Options is the same for `query` and `constructor` excluding connection.
+
+Callback is optional and will be called upon completion with
+standard node `(error, result)` signature.
+
+### clickHouse.ping ()
+
+Sends empty query and check if it "Ok.\n"
