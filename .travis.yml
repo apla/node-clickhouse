@@ -31,3 +31,5 @@ before_script:
   - (ls -la /opt/clickhouse/data/default/ || exit 0)
   - (ls -la /opt/clickhouse/metadata/default/ || exit 0)
   - curl -v "http://127.0.0.1:8123/"
+after_script:
+  - npm run report
