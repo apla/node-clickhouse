@@ -1,6 +1,6 @@
 {
   "name": "@apla/clickhouse",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Yandex ClickHouse database interface",
   "main": "src/clickhouse.js",
   "scripts": {
@@ -25,7 +25,7 @@
   "homepage": "https://github.com/apla/node-clickhouse#readme",
   "dependencies": {
     "object-assign": "^4.1.0",
-    "@apla/buffer-indexof-polyfill": "^1.1.0"
+    "buffer-indexof-polyfill": "^1.0.1"
   },
   "devDependencies": {
     "codecov": "^1.0.1",
