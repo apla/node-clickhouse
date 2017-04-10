@@ -3,6 +3,8 @@ var url  = require ('url');
 var qs   = require ('querystring');
 var util = require ('util');
 
+var debug = require ('debug')('clickhouse');
+
 var Duplex = require ('stream').Duplex;
 
 Object.assign = require ('object-assign');
@@ -103,6 +105,8 @@ function httpRequest (reqParams, reqData, cb) {
 
 		//the whole response has been received, so we just print it out here
 		response.on('end', function () {
+
+			debug (response.headers);
 
 			if (error) {
 				return errorHandler (new Error (error.toString ('utf8')))
