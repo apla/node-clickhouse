@@ -3,7 +3,7 @@ var url  = require ('url');
 var qs   = require ('querystring');
 var util = require ('util');
 
-var debug = require ('debug')('clickhouse');
+// var debug = require ('debug')('clickhouse');
 
 var Duplex = require ('stream').Duplex;
 
@@ -106,7 +106,7 @@ function httpRequest (reqParams, reqData, cb) {
 		//the whole response has been received, so we just print it out here
 		response.on('end', function () {
 
-			debug (response.headers);
+			// debug (response.headers);
 
 			if (error) {
 				return errorHandler (new Error (error.toString ('utf8')))
@@ -116,7 +116,11 @@ function httpRequest (reqParams, reqData, cb) {
 
 			var contentType = response.headers['content-type'];
 
-			if (response.statusCode === 200 && (!contentType || contentType.indexOf ('text/plain') === 0)) {
+			if (response.statusCode === 200 && (
+				!contentType
+				|| contentType.indexOf ('text/plain') === 0
+				|| contentType.indexOf ('text/html') === 0 // WTF: xenial - no content-type, precise - text/html
+			)) {
 				// probably this is a ping response or any other successful response with *empty* body
 				stream.push (null);
 				cb && cb (null, str.toString ('utf8'));
