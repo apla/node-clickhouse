@@ -4,8 +4,8 @@
   "description": "Yandex ClickHouse database interface",
   "main": "src/clickhouse.js",
   "scripts": {
-    "test": "istanbul cover _mocha -- --recursive ./tests -R spec && codecov",
-    "localtest": "istanbul cover _mocha -- --recursive ./tests -R spec",
+    "test": "nyc mocha --recursive ./tests -R spec",
+    "report": "nyc report --reporter=lcov > coverage.lcov && codecov",
     "simpletest": "mocha --recursive ./tests -R spec"
   },
   "repository": {
@@ -29,9 +29,9 @@
   },
   "devDependencies": {
     "codecov": "^1.0.1",
-    "istanbul": "^0.4.4",
     "memwatch-next": "^0.3.0",
-    "mocha": "^2.5.3"
+    "mocha": "^2.5.3",
+    "nyc": "^10.2.0"
   },
   "engines": {
     "node": ">=0.10"
