@@ -7,7 +7,7 @@ var Duplex = require ('stream').Duplex;
 
 Object.assign = require ('object-assign');
 
-require ('@apla/buffer-indexof-polyfill');
+require ('buffer-indexof-polyfill');
 
 var JSONStream = require ('./json-stream');
 
