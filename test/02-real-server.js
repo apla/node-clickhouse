@@ -17,7 +17,7 @@ describe ("real server queries", function () {
 		var ch = new ClickHouse ({host: host, port: port});
 		ch.ping (function (err, ok) {
 			assert (!err);
-			assert (ok === "Ok.\n", "ping response should be 'Ok.\\n'");
+			assert.equal (ok, "Ok.\n", "ping response should be 'Ok.\\n'");
 			done ();
 		});
 	});

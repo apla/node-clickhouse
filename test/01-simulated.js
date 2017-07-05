@@ -7,9 +7,35 @@ var qs   = require ('querystring');
 var assert = require ("assert");
 
 var responses = {
-	"SELECT 1 FORMAT JSONCompact": {"meta": [{"name": "1", "type": "UInt8"}], "data": [[1]], "rows": 1},
-	"SHOW DATABASES FORMAT JSONCompact": {"meta": [{"name": "name", "type": "String"}], "data": [["default"], ["system"]], "rows": 2},
-	"SELECT number FROM system.numbers LIMIT 10 FORMAT JSONCompact": {"meta":[{"name":"number","type":"UInt64"}],"data":[["0"],["1"],["2"],["3"],["4"],["5"],["6"],["7"],["8"],["9"]],"rows":10,"rows_before_limit_at_least":10},
+	"SELECT 1 FORMAT JSONCompact": {
+		"meta": [
+			{"name": "1", "type": "UInt8"}
+		],
+		"data": [
+			[1]
+		],
+		"rows": 1
+	},
+	"SHOW DATABASES FORMAT JSONCompact": {
+		"meta": [
+			{"name": "name", "type": "String"}
+		],
+		"data": [
+			["default"],
+			["system"]
+		],
+		"rows": 2
+	},
+	"SELECT number FROM system.numbers LIMIT 10 FORMAT JSONCompact": {
+		"meta": [
+			{"name":"number","type":"UInt64"}
+		],
+		"data": [
+			["0"],["1"],["2"],["3"],["4"],["5"],["6"],["7"],["8"],["9"]
+		],
+		"rows": 10,
+		"rows_before_limit_at_least": 10
+	},
 
 };
 
