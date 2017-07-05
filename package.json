@@ -32,8 +32,8 @@
   "devDependencies": {
     "codecov": "^2.2.0",
     "memwatch-next": "^0.3.0",
-    "mocha": "^3.4.2",
-    "nyc": "^11.0.3"
+    "mocha": "^2.5.3",
+    "nyc": "^10.2.0"
   },
   "engines": {
     "node": ">=0.10"
