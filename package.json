@@ -1,6 +1,6 @@
 {
   "name": "@apla/clickhouse",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Yandex ClickHouse database interface",
   "main": "src/clickhouse.js",
   "scripts": {
@@ -30,10 +30,10 @@
     "buffer-indexof-polyfill": "^1.0.1"
   },
   "devDependencies": {
-    "codecov": "^1.0.1",
+    "codecov": "^2.2.0",
     "memwatch-next": "^0.3.0",
-    "mocha": "^2.5.3",
-    "nyc": "^10.2.0"
+    "mocha": "^3.4.2",
+    "nyc": "^11.0.3"
   },
   "engines": {
     "node": ">=0.10"
