@@ -9,6 +9,8 @@ matrix:
 #      env: CXX=g++-4.8
     - node_js: '6'
       env: CXX=g++-4.8
+    - node_js: '8'
+      env: CXX=g++-4.8
 sudo: required
 addons:
   apt:
