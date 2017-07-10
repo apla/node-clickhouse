@@ -243,6 +243,8 @@ ClickHouse.prototype.getReqParams = function () {
 
 	urlObject.path = urlObject.path || '/';
 
+	urlObject.port = urlObject.port || 8123;
+
 	return urlObject;
 }
 
