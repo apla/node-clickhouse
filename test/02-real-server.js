@@ -6,7 +6,7 @@ var qs   = require ('querystring');
 
 var assert = require ("assert");
 
-describe ("real server queries", function () {
+describe ("real server", function () {
 
 	var server,
 		host = process.env.CLICKHOUSE_HOST || '127.0.0.1',
@@ -16,10 +16,24 @@ describe ("real server queries", function () {
 	it ("pings", function (done) {
 		var ch = new ClickHouse ({host: host, port: port});
 		ch.ping (function (err, ok) {
-			assert (!err);
+			assert.ifError (err);
 			assert.equal (ok, "Ok.\n", "ping response should be 'Ok.\\n'");
 			done ();
 		});
+	});
+
+	it ("pings with options as host", function (done) {
+		var ch = new ClickHouse (host);
+		ch.ping (function (err, ok) {
+			assert.ifError (err);
+			assert.equal (ok, "Ok.\n", "ping response should be 'Ok.\\n'");
+			done ();
+		});
+	});
+
+	it ("nothing to ping", function () {
+		var ch = new ClickHouse ();
+		assert (ch);
 	});
 
 	it ("returns error", function (done) {
