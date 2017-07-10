@@ -63,6 +63,10 @@ function httpRequest (reqParams, reqData, cb) {
 
 	var stream = new RecordStream ();
 
+	if (reqParams.query) {
+		reqParams.path = (reqParams.pathname || reqParams.path) + '?' + qs.stringify (reqParams.query);
+	}
+
 	var onResponse = function(response) {
 		var str;
 		var error;
@@ -310,7 +314,7 @@ ClickHouse.prototype.query = function (chQuery, options, cb) {
 		reqParams.method = 'POST';
 	}
 
-	reqParams.path += '?' + qs.stringify (queryObject);
+	reqParams.query = queryObject;
 
 	var stream = httpRequest (reqParams, reqData, cb);
 
