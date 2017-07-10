@@ -12,9 +12,19 @@ Synopsis
 ---
 
 ```javascript
-var ch = new ClickHouse ({host: clickhouse.host});
+var ch = new ClickHouse ({host: clickhouse.host, port: 8123, auth: "user:password"});
+// or
+var ch = new ClickHouse (clickhouse.host);
 
-// stream is an object stream. you can pipe it
+// do the query, callback interface, not recommended for selects
+ch.query ("CREATE DATABASE clickhouse_test", function (err, data) {
+
+});
+
+// promise interface (requires 'util.promisify' for node < 8, Promise shim for node < 4)
+ch.querying ("CREATE DATABASE clickhouse_test").then (…);
+
+// it is better to use stream interface to fetch select results
 var stream = ch.query ("SELECT 1");
 
 // or collect records yourself
@@ -69,8 +79,8 @@ for [http.request](https://nodejs.org/api/http.html#http_http_request_options_ca
  * **pathname**: pathname of ClickHouse server or `/` if omited,
 
 `queryOptions` object can contain any option from Settings (docs:
-[en](https://clickhouse.yandex/reference_en.html#Settings)
-[ru](https://clickhouse.yandex/reference_ru.html#Настройки)
+[en](https://clickhouse.yandex/docs/en/operations/settings/index.html)
+[ru](https://clickhouse.yandex/docs/ru/operations/settings/index.html)
 )
 
 For example:
@@ -114,6 +124,45 @@ Options are the same for `query` and `constructor` excluding connection.
 Callback is optional and will be called upon completion with
 a standard node `(error, result)` signature.
 
-### clickHouse.ping ()
+You should have at least one error handler listening. Via callbacks or via stream errors.
+If you have callback and stream listener, you'll have error notification in both listeners.
+
+### clickHouse.querying (statement, [options]).then (…)
+
+Promise interface. Similar to the callback one.
+
+### clickHouse.ping (function (err, response) {})
 
 Sends an empty query and check if it "Ok.\n"
+
+### clickHouse.pinging ().then (…)
+
+Promise interface for `ping`
+
+Notes
+-----
+
+## Memory size
+
+You can read all the records into memory in single call like this:
+
+```javascript
+
+var ch = new ClickHouse ({host: host, port: port});
+ch.query ("SELECT number FROM system.numbers LIMIT 10", {syncParser: true}, function (err, result) {
+  // result will contain all the data you need
+});
+
+```
+
+In this case whole JSON response from the server will be read into memory,
+then parsed into memory hogging your CPU. Default parser will parse server response
+line by line and emits events. This is slower, but much more memory and CPU efficient
+for larger datasets.
+
+## Promise interface
+
+Promise interface have some restrictions. It is not recommended to use this interface
+for `INSERT` and `SELECT` queries. For the `INSERT` you cannot bulk load data via stream,
+`SELECT` will collect all the records in the memory. For simple usage where data size
+is controlled it is ok.

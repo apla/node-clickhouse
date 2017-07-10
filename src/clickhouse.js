@@ -7,9 +7,7 @@ var util = require ('util');
 
 var Duplex = require ('stream').Duplex;
 
-Object.assign = require ('object-assign');
-
-require ('buffer-indexof-polyfill');
+require ('./legacy-support');
 
 var JSONStream = require ('./json-stream');
 
@@ -321,6 +319,17 @@ ClickHouse.prototype.query = function (chQuery, options, cb) {
 	return stream;
 }
 
+ClickHouse.prototype.querying = function (chQuery, options) {
+
+	return new Promise (function (resolve, reject) {
+		var stream = this.query (chQuery, options, function (err, data) {
+			if (err)
+				return reject (err);
+			resolve (data);
+		});
+	}.bind (this));
+}
+
 ClickHouse.prototype.ping = function (cb) {
 
 	var reqParams = this.getReqParams ();
@@ -330,6 +339,21 @@ ClickHouse.prototype.ping = function (cb) {
 	var stream = httpRequest (reqParams, {finalized: true}, cb);
 
 	return stream;
+}
+
+ClickHouse.prototype.pinging = function () {
+
+	return new Promise (function (resolve, reject) {
+		var reqParams = this.getReqParams ();
+
+		reqParams.method = 'GET';
+
+		httpRequest (reqParams, {finalized: true}, function (err, data) {
+			if (err)
+				return reject (err);
+			resolve (data);
+		});
+	}.bind (this));
 }
 
 module.exports = ClickHouse;

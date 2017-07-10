@@ -22,6 +22,20 @@ describe ("real server", function () {
 		});
 	});
 
+	it ("pinging using promise interface", function () {
+		var ch = new ClickHouse ({host: host, port: port});
+		return ch.pinging ();
+	});
+
+	it ("pinging using promise interface with bad connection option", function () {
+		var ch = new ClickHouse ();
+		return ch.pinging ().then (function () {
+			return Promise.reject (new Error ("Driver should throw without host name"))
+		}, function (e) {
+			return Promise.resolve ();
+		});
+	});
+
 	it ("pings with options as host", function (done) {
 		var ch = new ClickHouse (host);
 		ch.ping (function (err, ok) {

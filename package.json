@@ -26,10 +26,11 @@
   },
   "homepage": "https://github.com/apla/node-clickhouse#readme",
   "dependencies": {
-    "object-assign": "^4.1.0",
-    "buffer-indexof-polyfill": "^1.0.1"
+    "buffer-indexof-polyfill": "^1.0.1",
+    "object-assign": "^4.1.0"
   },
   "devDependencies": {
+    "bluebird": "^3.5.0",
     "codecov": "^2.2.0",
     "memwatch-next": "^0.3.0",
     "mocha": "^2.5.3",

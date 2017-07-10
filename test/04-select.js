@@ -46,6 +46,22 @@ describe ("select data from database", function () {
 		});
 	});
 
+	it ("selects numbers using promise", function () {
+		var ch = new ClickHouse ({host: host, port: port, useQueryString: true});
+		return ch.querying ("SELECT number FROM system.numbers LIMIT 10", {syncParser: true}).then (function (result) {
+			assert (result.meta, "result should be Object with `data` key to represent rows");
+			assert (result.data, "result should be Object with `meta` key to represent column info");
+			assert (result.meta.constructor === Array, "metadata is an array with column descriptions");
+			assert (result.meta[0].name === "number");
+			assert (result.data.constructor === Array, "data is a row set");
+			assert (result.data[0].constructor === Array, "each row contains list of values (using FORMAT JSONCompact)");
+			assert (result.data[9][0] === "9"); // this should be corrected at database side
+			assert (result.rows === 10);
+			assert (result.rows_before_limit_at_least === 10);
+			return Promise.resolve ();
+		});
+	});
+
 	it ("selects numbers using callback and query submitted in the POST body", function (done) {
 		var ch = new ClickHouse ({host: host, port: port});
 		ch.query ("SELECT number FROM system.numbers LIMIT 10", {syncParser: true}, function (err, result) {
