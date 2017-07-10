@@ -59,6 +59,15 @@ describe ("real server", function () {
 		});
 	});
 
+	it ("selects from system columns no more than 10 rows throws exception", function (done) {
+		var ch = new ClickHouse ({host: host, port: port, queryOptions: {max_rows_to_read: 10}});
+		ch.query ("SELECT * FROM system.columns", function (err, result) {
+			assert (err);
+
+			done ();
+		});
+	});
+
 	it ("creates a database", function (done) {
 		var ch = new ClickHouse ({host: host, port: port});
 		ch.query ("CREATE DATABASE node_clickhouse_test", function (err, result) {

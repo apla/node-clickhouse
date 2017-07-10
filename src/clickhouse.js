@@ -76,7 +76,9 @@ function httpRequest (reqParams, reqData, cb) {
 		function errorHandler (e) {
 			var err = parseError (e);
 
-			stream.emit ('error', err);
+			// user should define callback or add event listener for the error event
+			if (!cb || (cb && stream.listeners ('error').length))
+				stream.emit ('error', err);
 			return cb && cb (err);
 		}
 
@@ -104,6 +106,7 @@ function httpRequest (reqParams, reqData, cb) {
 				&& response.headers['content-type'].indexOf ('application/json') === 0
 				&& !reqData.syncParser
 				&& chunk.lastIndexOf ("\n") !== -1
+				&& str
 			) {
 
 				// store in buffer anything after
@@ -139,7 +142,7 @@ function httpRequest (reqParams, reqData, cb) {
 			// debug (response.headers);
 
 			if (error) {
-				return errorHandler (new Error (error.toString ('utf8')))
+				return errorHandler (error);
 			}
 
 			var data;
@@ -159,6 +162,7 @@ function httpRequest (reqParams, reqData, cb) {
 
 			var supplemental = {};
 
+			// we already pushed all the data
 			if (jsonParser.columns.length) {
 				try {
 					supplemental = JSON.parse (jsonParser.supplementalString + str.toString ('utf8'));
