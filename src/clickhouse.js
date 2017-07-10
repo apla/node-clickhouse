@@ -68,9 +68,9 @@ function httpRequest (reqParams, reqData, cb) {
 		var error;
 
 		if (response.statusCode === 200) {
-			str = new Buffer (0);
+			str = Buffer.alloc ? Buffer.alloc (0) : new Buffer (0);
 		} else {
-			error = new Buffer (0);
+			error = Buffer.alloc ? Buffer.alloc (0) : new Buffer (0);
 		}
 
 		function errorHandler (e) {
