@@ -33,7 +33,7 @@ describe ("error parsing", function () {
 
 	it ("returns error with line/col for sql with garbage", function (done) {
 		var ch = new ClickHouse ({host: host, port: port, useQueryString: true});
-		var stream = ch.query ("INSERT\n\t\tABCDEFGHIJKLMN", {syncParser: true}, function (err, result) {
+		var stream = ch.query ("CREATE\n\t\tABCDEFGHIJKLMN", {syncParser: true}, function (err, result) {
 			// assert (err);
 			// done ();
 		});
