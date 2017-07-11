@@ -57,161 +57,165 @@ function parseError (e) {
 	return fields;
 }
 
-function httpRequest (reqParams, reqData, cb) {
+function httpResponseHandler (stream, reqParams, reqData, cb, response) {
+	var str;
+	var error;
 
-	var stream = new RecordStream ();
+	if (response.statusCode === 200) {
+		str = Buffer.alloc ? Buffer.alloc (0) : new Buffer (0);
+	} else {
+		error = Buffer.alloc ? Buffer.alloc (0) : new Buffer (0);
+	}
+
+	function errorHandler (e) {
+		var err = parseError (e);
+
+		// user should define callback or add event listener for the error event
+		if (!cb || (cb && stream.listeners ('error').length))
+			stream.emit ('error', err);
+		return cb && cb (err);
+	}
+
+	// In case of error, we're just throw away data
+	response.on ('error', errorHandler);
+
+	// TODO: use streaming interface
+	// from https://github.com/jimhigson/oboe.js
+	// or https://www.npmjs.com/package/stream-json or
+	// or https://github.com/creationix/jsonparse
+
+	// or implement it youself
+	var jsonParser = new JSONStream (stream);
+
+	var symbolsTransferred = 0;
+
+	//another chunk of data has been received, so append it to `str`
+	response.on ('data', function (chunk) {
+
+		symbolsTransferred += chunk.length;
+
+		// JSON response
+		if (
+			response.headers['content-type']
+			&& response.headers['content-type'].indexOf ('application/json') === 0
+			&& !reqData.syncParser
+			&& chunk.lastIndexOf ("\n") !== -1
+			&& str
+		) {
+
+			// store in buffer anything after
+			var newLinePos = chunk.lastIndexOf ("\n");
+
+			var remains = chunk.slice (newLinePos + 1);
+
+			Buffer.concat([str, chunk.slice (0, newLinePos)])
+				.toString ('utf8')
+				.split ("\n")
+				.forEach (jsonParser);
+
+			jsonParser.rows.forEach (function (row) {
+				// write to readable stream
+				stream.push (row);
+			});
+
+			jsonParser.rows = [];
+
+			str = remains;
+
+			// plaintext response
+		} else if (str) {
+			str   = Buffer.concat ([str, chunk]);
+		} else {
+			error = Buffer.concat ([error, chunk]);
+		}
+	});
+
+	//the whole response has been received, so we just print it out here
+	response.on('end', function () {
+
+		// debug (response.headers);
+
+		if (error) {
+			return errorHandler (error);
+		}
+
+		var data;
+
+		var contentType = response.headers['content-type'];
+
+		if (response.statusCode === 200 && (
+			!contentType
+			|| contentType.indexOf ('text/plain') === 0
+			|| contentType.indexOf ('text/html') === 0 // WTF: xenial - no content-type, precise - text/html
+		)) {
+			// probably this is a ping response or any other successful response with *empty* body
+			stream.push (null);
+			cb && cb (null, str.toString ('utf8'));
+			return;
+		}
+
+		var supplemental = {};
+
+		// we already pushed all the data
+		if (jsonParser.columns.length) {
+			try {
+				supplemental = JSON.parse (jsonParser.supplementalString + str.toString ('utf8'));
+			} catch (e) {
+				// TODO
+			}
+			stream.supplemental = supplemental;
+
+			// end stream
+			stream.push (null);
+
+			cb && cb (null, Object.assign ({}, supplemental, {
+				meta: jsonParser.columns,
+				transferred: symbolsTransferred
+			}));
+
+			return;
+		}
+
+		// one shot data parsing, should be much faster for smaller datasets
+		try {
+			data = JSON.parse (str.toString ('utf8'));
+
+			data.transferred = symbolsTransferred;
+
+			if (data.meta) {
+				stream.emit ('metadata', data.meta);
+			}
+
+			if (data.data) {
+				// no highWatermark support
+				data.data.forEach (function (row) {
+					stream.push (row);
+				});
+
+				stream.push (null);
+			}
+		} catch (e) {
+			return errorHandler (e);
+		}
+
+		cb && cb (null, data);
+	});
+
+}
+
+function httpRequest (reqParams, reqData, cb) {
 
 	if (reqParams.query) {
 		reqParams.path = (reqParams.pathname || reqParams.path) + '?' + qs.stringify (reqParams.query);
 	}
 
-	var onResponse = function(response) {
-		var str;
-		var error;
+	var stream = new RecordStream ({
+		recordFormat: 'TabSeparated'
+	});
 
-		if (response.statusCode === 200) {
-			str = Buffer.alloc ? Buffer.alloc (0) : new Buffer (0);
-		} else {
-			error = Buffer.alloc ? Buffer.alloc (0) : new Buffer (0);
-		}
+	var req = http.request (reqParams, httpResponseHandler.bind (this, stream, reqParams, reqData, cb));
 
-		function errorHandler (e) {
-			var err = parseError (e);
-
-			// user should define callback or add event listener for the error event
-			if (!cb || (cb && stream.listeners ('error').length))
-				stream.emit ('error', err);
-			return cb && cb (err);
-		}
-
-		// In case of error, we're just throw away data
-		response.on ('error', errorHandler);
-
-		// TODO: use streaming interface
-		// from https://github.com/jimhigson/oboe.js
-		// or https://www.npmjs.com/package/stream-json or
-		// or https://github.com/creationix/jsonparse
-
-		// or implement it youself
-		var jsonParser = new JSONStream (stream);
-
-		var symbolsTransferred = 0;
-
-		//another chunk of data has been received, so append it to `str`
-		response.on ('data', function (chunk) {
-
-			symbolsTransferred += chunk.length;
-
-			// JSON response
-			if (
-				response.headers['content-type']
-				&& response.headers['content-type'].indexOf ('application/json') === 0
-				&& !reqData.syncParser
-				&& chunk.lastIndexOf ("\n") !== -1
-				&& str
-			) {
-
-				// store in buffer anything after
-				var newLinePos = chunk.lastIndexOf ("\n");
-
-				var remains = chunk.slice (newLinePos + 1);
-
-				Buffer.concat([str, chunk.slice (0, newLinePos)])
-					.toString ('utf8')
-					.split ("\n")
-					.forEach (jsonParser);
-
-				jsonParser.rows.forEach (function (row) {
-					// write to readable stream
-					stream.push (row);
-				});
-
-				jsonParser.rows = [];
-
-				str = remains;
-
-			// plaintext response
-			} else if (str) {
-				str   = Buffer.concat ([str, chunk]);
-			} else {
-				error = Buffer.concat ([error, chunk]);
-			}
-		});
-
-		//the whole response has been received, so we just print it out here
-		response.on('end', function () {
-
-			// debug (response.headers);
-
-			if (error) {
-				return errorHandler (error);
-			}
-
-			var data;
-
-			var contentType = response.headers['content-type'];
-
-			if (response.statusCode === 200 && (
-				!contentType
-				|| contentType.indexOf ('text/plain') === 0
-				|| contentType.indexOf ('text/html') === 0 // WTF: xenial - no content-type, precise - text/html
-			)) {
-				// probably this is a ping response or any other successful response with *empty* body
-				stream.push (null);
-				cb && cb (null, str.toString ('utf8'));
-				return;
-			}
-
-			var supplemental = {};
-
-			// we already pushed all the data
-			if (jsonParser.columns.length) {
-				try {
-					supplemental = JSON.parse (jsonParser.supplementalString + str.toString ('utf8'));
-				} catch (e) {
-					// TODO
-				}
-				stream.supplemental = supplemental;
-
-				// end stream
-				stream.push (null);
-
-				cb && cb (null, Object.assign ({}, supplemental, {
-					meta: jsonParser.columns,
-					transferred: symbolsTransferred
-				}));
-
-				return;
-			}
-
-			// one shot data parsing, should be much faster for smaller datasets
-			try {
-				data = JSON.parse (str.toString ('utf8'));
-
-				data.transferred = symbolsTransferred;
-
-				if (data.meta) {
-					stream.emit ('metadata', data.meta);
-				}
-
-				if (data.data) {
-					// no highWatermark support
-					data.data.forEach (function (row) {
-						stream.push (row);
-					});
-
-					stream.push (null);
-				}
-			} catch (e) {
-				return errorHandler (e);
-			}
-
-			cb && cb (null, data);
-		});
-
-	};
-
-	var req = http.request (reqParams, onResponse);
+	stream.req = req;
 
 	if (reqData.query)
 		req.write (reqData.query);
