@@ -16,6 +16,16 @@ function RecordStream (options) {
 	options = options || {};
 	options.objectMode = true;
 	Duplex.call (this, options);
+
+	this.format = options.recordFormat;
+
+	this._writeBuffer = [];
+	this._canWrite = false;
+
+	Object.defineProperty (this, 'req', {
+		get: function () {return this._req},
+		set: function (req) {this._req = req; this._canWrite = true;}
+	})
 }
 
 util.inherits(RecordStream, Duplex);
@@ -24,8 +34,44 @@ RecordStream.prototype._read = function read () {
 	// nothing to do there, when data comes, push will be called
 };
 
-RecordStream.prototype._write = function write () {
-	//
+RecordStream.prototype._write = function _write (chunk, enc, cb) {
+	if (typeof chunk === 'string') {
+		if (chunk.substr (chunk.length - 1) !== "\n") {
+			chunk = chunk + "\n";
+		}
+		chunk = Buffer.from ? Buffer.from (chunk, enc) : new Buffer (chunk, enc);
+	}
+
+	// there is no way to determine line ending efficiently for Buffer
+
+	if (!(chunk instanceof Buffer)) {
+		return this.emit ('error', new Error ('Incompatible format'));
+
+	}
+
+	this._canWrite = this.req.write (chunk);
+
+	if (!this._canWrite) {
+		this.req.once ('drain', function () {
+			// wait for drain, then emit drain event calling cb ()
+			cb ();
+		}.bind (this));
+
+		return;
+	}
+
+	cb ();
+
+};
+
+RecordStream.prototype.end = function write (chunk, enc, cb) {
+	if (chunk)
+		this.write (chunk, enc);
+
+	this.req.once ('drain', function () {
+		this.req.end ();
+		cb && cb ();
+	}.bind (this));
 };
 
 function parseError (e) {
@@ -298,12 +344,22 @@ ClickHouse.prototype.query = function (chQuery, options, cb) {
 		// 3. Same as previous but without VALUES keyword: INSERT INTO t FORMAT Values
 		// 4. Insert from SELECT: INSERT INTO t SELECT…
 
-		// we need to handler 2 and 3 and not to close http stream in that cases
+		// we need to handle 2 and 3 and http stream must stay open in that cases
 		if (chQuery.match (/VALUES$/i)) {
 			reqData.finalized = false;
 
-			// simplest format to use, only need to escape \t, \\ and \n
-			formatSuffix = ' FORMAT TabSeparated';
+			// TODO: use values format
+			// formatSuffix = ' FORMAT TabSeparated ';
+		} else if (!chQuery.match (/VALUES/i)) {
+
+			reqData.finalized = false;
+
+			if (!chQuery.match (/FORMAT/i)) {
+				// simplest format to use, only need to escape \t, \\ and \n
+				formatSuffix = ' FORMAT TabSeparated ';
+			} else {
+				// otherwise, we will allow user to send prepared strings/buffers
+			}
 		}
 	}
 

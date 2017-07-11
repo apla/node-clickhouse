@@ -92,9 +92,11 @@ For example:
 
 Driver options:
 
- * **omitFormat**: `FORMAT JSONCompact` will be added by default to every query.
+ * **omitFormat**: `FORMAT JSONCompact` will be added by default to every query
+ which returns dataset. Currently `SELECT|SHOW|DESC|DESCRIBE|EXISTS\s+TABLE`.
  You can change this behaviour by providing this option. In this case you should
  add `FORMAT JSONCompact` by yourself.
+ * **inputFormat**: this is format for data loading with `INSERT` statements.
  * **syncParser**: collect data, then parse entire response. Should be faster, but for
  large datasets all your dataset goes into memory (actually, entire response + entire dataset).
  Default: `false`
@@ -141,6 +143,31 @@ Promise interface for `ping`
 
 Notes
 -----
+
+## Bulk data loading with INSERT statements
+
+`INSERT` can be used for bulk data loading. There is a 2 formats easily implementable
+with javascript: CSV and TabSeparated/TSV.
+
+CSV is useful for loading from file, thus you can read and pipe into clickhouse
+file contents. To activate CSV parsing you should set `inputFormat` option to `CSV`
+for driver or query:
+
+```javascript
+
+var csvStream = fs.createReadStream ('data.csv');
+var clickhouseStream = clickHouse.query (statement, {inputFormat: CSV});
+
+csvStream.pipe (clickhouseStream);
+
+```
+
+TSV is useful for loading from file and bulk loading from external sources, such as other databases.
+Only `\\`, `\t` and `\n` need to be escaped in strings; numbers, nulls,
+bools and date objects need some minor processing. You can send prepared TSV data strings
+(line ending will be appended automatically), buffers (always passed as is) or Arrays with fields (WIP).
+
+
 
 ## Memory size
 
