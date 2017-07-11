@@ -51,7 +51,18 @@ describe ("error parsing", function () {
 
 	it ("returns error for empty sql", function (done) {
 		var ch = new ClickHouse ({host: host, port: port, useQueryString: true});
+
+		function countCallbacks (err) {
+			countCallbacks.count = (countCallbacks.count || 0) + 1;
+
+			if (countCallbacks.count === 2) {
+				//
+				done ();
+			}
+		}
+
 		var stream = ch.query ("-- nothing here", {syncParser: true}, function (err, result) {
+			countCallbacks (err);
 			// assert (err);
 			// done ();
 		});
@@ -64,7 +75,8 @@ describe ("error parsing", function () {
 			assert (err.message.match (/Syntax error/));
 			assert.ifError ('lineno' in err);
 			assert.ifError ('colno'  in err);
-			done();
+
+			countCallbacks (err);
 		});
 	});
 
