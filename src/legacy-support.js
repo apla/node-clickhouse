@@ -8,7 +8,3 @@ if (nodeVer[0] < 4) {
 if (nodeVer[0] < 6) {
 	require ('buffer-indexof-polyfill');
 }
-
-if (nodeVer[0] < 8) {
-	require ('util.promisify');
-}
