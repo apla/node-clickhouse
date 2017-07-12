@@ -85,7 +85,7 @@ describe ("real server", function () {
 	it ("creates a database", function (done) {
 		var ch = new ClickHouse ({host: host, port: port});
 		ch.query ("CREATE DATABASE node_clickhouse_test", function (err, result) {
-			assert (!err);
+			assert (!err, err);
 
 			dbCreated = true;
 			// console.log (result);
@@ -97,7 +97,7 @@ describe ("real server", function () {
 	it ("creates a table", function (done) {
 		var ch = new ClickHouse ({host: host, port: port});
 		ch.query ("CREATE TABLE node_clickhouse_test.t (a UInt8) ENGINE = Memory", function (err, result) {
-			assert (!err);
+			assert (!err, err);
 
 			done ();
 		});
@@ -150,7 +150,7 @@ describe ("real server", function () {
 	after (function (done) {
 
 		if (!dbCreated)
-			return done;
+			return done ();
 
 		var ch = new ClickHouse ({host: host, port: port});
 		ch.query ("DROP DATABASE node_clickhouse_test", function (err, result) {
