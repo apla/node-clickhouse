@@ -1,3 +1,7 @@
+var util   = require ('util');
+var Duplex = require ('stream').Duplex;
+
+var encodeValue = require ('./process-db-value').encodeValue;
 
 /**
  * Simplified JSON stream parser
@@ -85,4 +89,78 @@ function JSONStream (emitter) {
 	return processLine;
 }
 
-module.exports = JSONStream;
+function RecordStream (options) {
+	// if (! (this instanceof RecordStream)) return new RecordStream(options);
+	options = options || {};
+	options.objectMode = true;
+	Duplex.call (this, options);
+
+	this.format = options.recordFormat;
+
+	this._writeBuffer = [];
+	this._canWrite = false;
+
+	Object.defineProperty (this, 'req', {
+		get: function () {return this._req},
+		set: function (req) {this._req = req; this._canWrite = true;}
+	})
+}
+
+util.inherits(RecordStream, Duplex);
+
+RecordStream.prototype._read = function read () {
+	// nothing to do there, when data comes, push will be called
+};
+
+RecordStream.prototype._write = function _write (chunk, enc, cb) {
+
+	if (Array.isArray (chunk)) {
+		chunk = chunk.map (function (field) {
+			return encodeValue (false, field, this.format);
+		}.bind (this)).join ("\t");
+	}
+
+	if (typeof chunk === 'string') {
+		if (chunk.substr (chunk.length - 1) !== "\n") {
+			chunk = chunk + "\n";
+		}
+		chunk = Buffer.from ? Buffer.from (chunk, enc) : new Buffer (chunk, enc);
+	}
+
+	// there is no way to determine line ending efficiently for Buffer
+
+	if (!(chunk instanceof Buffer)) {
+		return this.emit ('error', new Error ('Incompatible format'));
+
+	}
+
+	this._canWrite = this.req.write (chunk);
+
+	if (!this._canWrite) {
+		this.req.once ('drain', function () {
+			// wait for drain, then emit drain event calling cb ()
+			cb ();
+		}.bind (this));
+
+		return;
+	}
+
+	cb ();
+
+};
+
+RecordStream.prototype.end = function write (chunk, enc, cb) {
+	if (chunk)
+		this.write (chunk, enc);
+
+	this.req.once ('drain', function () {
+		this.req.end ();
+		cb && cb ();
+	}.bind (this));
+};
+
+
+module.exports = {
+	JSONStream: JSONStream,
+	RecordStream: RecordStream
+};
