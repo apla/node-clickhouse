@@ -107,6 +107,49 @@ describe ("insert data", function () {
 		stream.end ();
 	});
 
+	it ("creates a table 3", function (done) {
+		var ch = new ClickHouse ({host: host, port: port, queryOptions: {database: dbName}});
+		ch.query ("CREATE TABLE t3 (a UInt8, b Float32, x Nullable(String), z DateTime) ENGINE = Memory", function (err, result) {
+			assert (!err);
+
+			done ();
+		});
+	});
+
+	it ("inserts data from array of objects using stream", function (done) {
+		var ch = new ClickHouse ({host: host, port: port});
+
+		var now = new Date ();
+
+		var stream = ch.query ("INSERT INTO t3", {format: "JSONEachRow", queryOptions: {database: dbName}}, function (err, result) {
+			assert (!err, err);
+
+			ch.query ("SELECT * FROM t3", {syncParser: true, queryOptions: {database: dbName}}, function (err, result) {
+
+				assert.equal (result.data[0][0], 1);
+				assert.equal (result.data[0][1], 2.22);
+				assert.equal (result.data[0][2], null);
+				assert.equal (result.data[0][3], now.toISOString().replace (/\..*/, '').replace ('T', ' '));
+
+				assert.equal (result.data[1][0], 20);
+				assert.equal (result.data[1][1], 1.11);
+				assert.equal (result.data[1][2], "wrqwefqwef");
+				assert.equal (result.data[1][3], "2017-07-07 12:12:12");
+
+				done ();
+
+			});
+		});
+
+		stream.write ({a: 1, b: 2.22, x: null, z: now});
+		stream.write ({a: 20, b: 1.11, x: "wrqwefqwef", z: "2017-07-07 12:12:12"});
+
+		// stream.write ([0, Infinity, null, new Date ()]);
+		// stream.write ([23, NaN, "yyy", new Date ()]);
+
+		stream.end ();
+	});
+
 	after (function (done) {
 
 		if (!dbCreated)

@@ -171,6 +171,8 @@ Internally, every field will be converted to the format which ClickHouse can acc
 Then escaped and joined with delimiter for the particular format.
 If you ever need to store rows (in arrays) and send preformatted data, you can do it.
 
+ClickHouse also supports [JSONEachRow](https://clickhouse.yandex/docs/en/formats/jsoneachrow.html) format
+which can be useful to insert javascript objects if you have such recordset.
 
 
 ## Memory size

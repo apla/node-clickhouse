@@ -70,8 +70,9 @@ function encodeValue (wrapString, v, format) {
 			if (v instanceof Array)
 				return '[' + v.map (encodeValue.bind (this, true, format)).join (',') + ']'
 			if (v === null)
-				return '\\N';
-			return '\\N';
+				return format.match (/^JSON/) ? v : '\\N';
+
+			return format.match (/^JSON/) ? v : '\\N';
 			console.warn ('Cannot stringify [Object]:', v);
 		case 'boolean':
 			return v === true ? 1 : 0;

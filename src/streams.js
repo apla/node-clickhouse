@@ -129,6 +129,11 @@ RecordStream.prototype._write = function _write (chunk, enc, cb) {
 		}.bind (this)).join ("\t") + "\n";
 	} else if (chunk instanceof Buffer) {
 
+	} else if (chunk.toString () === "[object Object]" && this.format === "JSONEachRow") {
+		Object.keys (chunk).forEach (function (k) {
+			chunk[k] = encodeValue (false, chunk[k], this.format);
+		}.bind (this));
+		chunk = JSON.stringify (chunk) + "\n";
 	}
 
 	if (typeof chunk === 'string') {
