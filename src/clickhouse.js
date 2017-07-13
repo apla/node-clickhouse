@@ -237,7 +237,7 @@ ClickHouse.prototype.query = function (chQuery, options, cb) {
 	var formatRegexp = /FORMAT\s+(BlockTabSeparated|CSV|CSVWithNames|JSON|JSONCompact|JSONEachRow|Native|Null|Pretty|PrettyCompact|PrettyCompactMonoBlock|PrettyNoEscapes|PrettyCompactNoEscapes|PrettySpaceNoEscapes|PrettySpace|RowBinary|TabSeparated|TabSeparatedRaw|TabSeparatedWithNames|TabSeparatedWithNamesAndTypes|TSKV|Values|Vertical|XML)/i;
 	var formatMatch = chQuery.match (formatRegexp);
 
-	if (formatMatch) {
+	if (!options.omitFormat && formatMatch) {
 		options.format = formatMatch[1];
 		options.omitFormat = true;
 	}
