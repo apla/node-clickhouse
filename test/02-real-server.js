@@ -124,7 +124,7 @@ describe ("real server", function () {
 	it ("inserts some data", function (done) {
 		var ch = new ClickHouse ({host: host, port: port});
 		ch.query ("INSERT INTO t VALUES (1),(2),(3)", {queryOptions: {database: 'node_clickhouse_test'}}, function (err, result) {
-			assert (!err);
+			assert (!err, err);
 
 			// let's wait a few seconds
 			setTimeout (function () {done ()}, 500);

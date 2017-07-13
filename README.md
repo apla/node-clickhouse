@@ -92,17 +92,17 @@ For example:
 
 Driver options:
 
- * **omitFormat**: `FORMAT JSONCompact` will be added by default to every query
- which returns dataset. Currently `SELECT|SHOW|DESC|DESCRIBE|EXISTS\s+TABLE`.
- You can change this behaviour by providing this option. In this case you should
- add `FORMAT JSONCompact` by yourself.
- * **inputFormat**: this is format for data loading with `INSERT` statements.
- * **syncParser**: collect data, then parse entire response. Should be faster, but for
- large datasets all your dataset goes into memory (actually, entire response + entire dataset).
- Default: `false`
  * **dataObjects**: use `FORMAT JSON` instead of `FORMAT JSONCompact` for output.
  By default (false), you'll receive array of values for each row. If you set dataObjects
  to true, every row will become an object with format: `{fieldName: fieldValue, …}`
+ * **format**: this is format for data loading with `INSERT` statements.
+ * **syncParser**: collect data, then parse entire response. Should be faster, but for
+ large datasets all your dataset goes into memory (actually, entire response + entire dataset).
+ Default: `false`
+ * **omitFormat**: `FORMAT JSONCompact` will be added by default to every query
+ which returns dataset. Currently `SELECT|SHOW|DESC|DESCRIBE|EXISTS\s+TABLE`.
+ You can change this behaviour by providing this option. In this case you should
+ add `FORMAT JSONCompact` by yourself. Should be detected automatically. Default `false`;
 
 
 ### var stream = clickHouse.query (statement, [options], [callback])
@@ -166,6 +166,10 @@ TSV is useful for loading from file and bulk loading from external sources, such
 Only `\\`, `\t` and `\n` need to be escaped in strings; numbers, nulls,
 bools and date objects need some minor processing. You can send prepared TSV data strings
 (line ending will be appended automatically), buffers (always passed as is) or Arrays with fields (WIP).
+
+Internally, every field will be converted to the format which ClickHouse can accept.
+Then escaped and joined with delimiter for the particular format.
+If you ever need to store rows (in arrays) and send preformatted data, you can do it.
 
 
 

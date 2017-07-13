@@ -165,7 +165,7 @@ function httpRequest (reqParams, reqData, cb) {
 	}
 
 	var stream = new RecordStream ({
-		recordFormat: 'TabSeparated'
+		format: reqData.format
 	});
 
 	var req = http.request (reqParams, httpResponseHandler.bind (this, stream, reqParams, reqData, cb));
@@ -229,22 +229,32 @@ ClickHouse.prototype.query = function (chQuery, options, cb) {
 
 	options.omitFormat  = options.omitFormat  || this.options.omitFormat  || false;
 	options.dataObjects = options.dataObjects || this.options.dataObjects || false;
+	options.format      = options.format      || this.options.format      || null;
 
 	// we're adding `queryOptions` passed for constructor if any
 	var queryObject = Object.assign ({}, this.options.queryOptions, options.queryOptions);
 
+	var formatRegexp = /FORMAT\s+(BlockTabSeparated|CSV|CSVWithNames|JSON|JSONCompact|JSONEachRow|Native|Null|Pretty|PrettyCompact|PrettyCompactMonoBlock|PrettyNoEscapes|PrettyCompactNoEscapes|PrettySpaceNoEscapes|PrettySpace|RowBinary|TabSeparated|TabSeparatedRaw|TabSeparatedWithNames|TabSeparatedWithNamesAndTypes|TSKV|Values|Vertical|XML)/i;
+	var formatMatch = chQuery.match (formatRegexp);
+
+	if (formatMatch) {
+		options.format = formatMatch[1];
+		options.omitFormat = true;
+	}
+
 	var reqData = {
 		syncParser: options.syncParser || this.options.syncParser || false,
-		finalized: true // allows to write records into connection stream
+		finalized: true, // allows to write records into connection stream
 	};
 
 	var reqParams = this.getReqParams ();
 
-	var formatSuffix = '';
+	var formatEnding = '';
 
 	// format should be added for data queries
 	if (chQuery.match (/^(?:SELECT|SHOW|DESC|DESCRIBE|EXISTS\s+TABLE)/i)) {
-		formatSuffix = ' FORMAT ' + (options.dataObjects ? 'JSON' : 'JSONCompact');
+		if (!options.format)
+			options.format = options.dataObjects ? 'JSON' : 'JSONCompact';
 	} else if (chQuery.match (/^INSERT/i)) {
 
 		// There is some variants according to the documentation:
@@ -254,30 +264,37 @@ ClickHouse.prototype.query = function (chQuery, options, cb) {
 		// 4. Insert from SELECT: INSERT INTO t SELECT…
 
 		// we need to handle 2 and 3 and http stream must stay open in that cases
-		if (chQuery.match (/VALUES$/i)) {
-			reqData.finalized = false;
+		if (chQuery.match (/\s+VALUES\b/i)) {
+			if (chQuery.match (/\s+VALUES\s*$/i))
+				reqData.finalized = false;
 
-			// TODO: use values format
-			// formatSuffix = ' FORMAT TabSeparated ';
-		} else if (!chQuery.match (/VALUES/i)) {
+			options.format = 'Values';
+			options.omitFormat = true;
+
+		} else {
 
 			reqData.finalized = false;
 
 			if (!chQuery.match (/FORMAT/i)) {
 				// simplest format to use, only need to escape \t, \\ and \n
-				formatSuffix = ' FORMAT TabSeparated ';
+				options.format = options.format || 'TabSeparated';
+				formatEnding = ' '; // clickhouse don't like data immediately after format name
 			} else {
-				// otherwise, we will allow user to send prepared strings/buffers
+
 			}
 		}
+	} else {
+		options.omitFormat = true;
 	}
+
+	reqData.format = options.format;
 
 	// use query string to submit ClickHouse query — useful to mock CH server
 	if (this.options.useQueryString) {
-		queryObject.query = chQuery + ((options.omitFormat) ? '' : formatSuffix);
+		queryObject.query = chQuery + ((options.omitFormat) ? '' : ' FORMAT ' + options.format + formatEnding);
 		reqParams.method = 'GET';
 	} else {
-		reqData.query = chQuery + (options.omitFormat ? '' : formatSuffix);
+		reqData.query = chQuery + (options.omitFormat ? '' : ' FORMAT ' + options.format + formatEnding);
 		reqParams.method = 'POST';
 	}
 

@@ -89,13 +89,18 @@ function JSONStream (emitter) {
 	return processLine;
 }
 
+/**
+ * Duplex stream to work with database
+ * @param {object} [options] options
+ * @param {object} [options.format] how to format filelds/rows internally
+ */
 function RecordStream (options) {
 	// if (! (this instanceof RecordStream)) return new RecordStream(options);
 	options = options || {};
 	options.objectMode = true;
 	Duplex.call (this, options);
 
-	this.format = options.recordFormat;
+	this.format = options.format;
 
 	this._writeBuffer = [];
 	this._canWrite = false;
@@ -112,12 +117,18 @@ RecordStream.prototype._read = function read () {
 	// nothing to do there, when data comes, push will be called
 };
 
+// http://ey3ball.github.io/posts/2014/07/17/node-streams-back-pressure/
+// https://nodejs.org/en/docs/guides/backpressuring-in-streams/
+// https://nodejs.org/docs/latest/api/stream.html#stream_implementing_a_writable_stream
+
 RecordStream.prototype._write = function _write (chunk, enc, cb) {
 
 	if (Array.isArray (chunk)) {
 		chunk = chunk.map (function (field) {
 			return encodeValue (false, field, this.format);
-		}.bind (this)).join ("\t");
+		}.bind (this)).join ("\t") + "\n";
+	} else if (chunk instanceof Buffer) {
+
 	}
 
 	if (typeof chunk === 'string') {

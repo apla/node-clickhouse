@@ -68,14 +68,14 @@ function encodeValue (wrapString, v, format) {
 			if (v instanceof Date)
 				return ("" + v.valueOf ()).substr (0, 10);
 			if (v instanceof Array)
-				return '[' + v.map (encodeValue.bind (this, true)).join (',') + ']'
+				return '[' + v.map (encodeValue.bind (this, true, format)).join (',') + ']'
 			if (v === null)
 				return '\\N';
 			return '\\N';
 			console.warn ('Cannot stringify [Object]:', v);
 		case 'boolean':
 			return v === true ? 1 : 0;
-					}
+	}
 }
 
 function encodeTSRow (row) {
