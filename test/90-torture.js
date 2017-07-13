@@ -9,22 +9,39 @@ var assert = require ("assert");
 var memwatch = require('memwatch-next');
 
 // replace with it, if you want to run this test suite
-var method  = it.skip;
-var timeout = 50000;
+var method  = process.env.TORTURE ? it : it.skip;
+var timeout = 60000;
+
+function checkUsageAndGC (used, baseline) {
+	function inMB (v) {
+		return (v/Math.pow (2, 20)).toFixed (1) + 'MB';
+	}
+	var usage = 'rss heapTotal heapUsed external'.split (' ').map (function (k) {
+		var delta = used[k] - baseline[k];
+		return k + ' ' + inMB (used[k]) + ' / +' + inMB (delta);
+	});
+
+	console.log (usage.join (' '));
+
+	gc ();
+}
 
 describe ("torturing", function () {
+
+	global.gc && gc();
 
 	var server,
 		host = process.env.CLICKHOUSE_HOST || '127.0.0.1',
 		port = process.env.CLICKHOUSE_PORT || 8123,
-		lastSuite;
+		lastSuite,
+		baselineMemoryUsage = process.memoryUsage();
 
 	before (function () {
 		memwatch.on ('leak', function (info) {
 			console.log (info);
 		});
 
-		console.log (process.memoryUsage());
+		// console.log (process.memoryUsage());
 	})
 
 	method ("selects 1 million using async parser", function (done) {
@@ -220,14 +237,12 @@ describe ("torturing", function () {
 		lastSuite = 'sync';
 	});
 
+	afterEach (function () {
 
-	afterEach (function (done) {
-		console.log ('after', lastSuite,  process.memoryUsage());
+		checkUsageAndGC (process.memoryUsage(), baselineMemoryUsage)
 
-		setTimeout (function () {
-			console.log ('before next',  process.memoryUsage());
-			done ();
-		}, 1000);
+		// console.log ('after', lastSuite,  process.memoryUsage());
+
 	})
 
 });

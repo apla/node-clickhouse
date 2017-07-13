@@ -8,7 +8,8 @@
     "stop-docker-image": "docker stop clickhouse-server",
     "test": "nyc mocha --recursive ./test -R spec",
     "report": "nyc report --reporter=lcov > coverage.lcov && codecov",
-    "simpletest": "mocha --recursive ./test -R spec"
+    "simpletest": "mocha --recursive ./test -R spec",
+    "torturetest": "TORTURE=1 mocha -gc --recursive ./test -R spec"
   },
   "repository": {
     "type": "git",
