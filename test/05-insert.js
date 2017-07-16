@@ -2,6 +2,8 @@ var ClickHouse = require ("../src/clickhouse");
 
 var assert = require ("assert");
 
+var encodeValue = require ('../src/process-db-value').encodeValue;
+
 describe ("insert data", function () {
 
 	var server,

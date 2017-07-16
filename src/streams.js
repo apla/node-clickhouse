@@ -1,7 +1,7 @@
 var util   = require ('util');
 var Duplex = require ('stream').Duplex;
 
-var encodeValue = require ('./process-db-value').encodeValue;
+var encodeRow = require ('./process-db-value').encodeRow;
 
 /**
  * Simplified JSON stream parser
@@ -123,18 +123,8 @@ RecordStream.prototype._read = function read () {
 
 RecordStream.prototype._write = function _write (chunk, enc, cb) {
 
-	if (Array.isArray (chunk)) {
-		chunk = chunk.map (function (field) {
-			return encodeValue (false, field, this.format);
-		}.bind (this)).join ("\t") + "\n";
-	} else if (chunk instanceof Buffer) {
-
-	} else if (chunk.toString () === "[object Object]" && this.format === "JSONEachRow") {
-		Object.keys (chunk).forEach (function (k) {
-			chunk[k] = encodeValue (false, chunk[k], this.format);
-		}.bind (this));
-		chunk = JSON.stringify (chunk) + "\n";
-	}
+	if (!Buffer.isBuffer (chunk) && typeof chunk !== 'string')
+		chunk = encodeRow (chunk, this.format);
 
 	if (typeof chunk === 'string') {
 		if (chunk.substr (chunk.length - 1) !== "\n") {
