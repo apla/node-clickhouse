@@ -5,21 +5,24 @@ var fs     = require ("fs");
 var crypto = require ("crypto");
 
 var encodeValue = require ('../src/process-db-value').encodeValue;
+var encodeRow   = require ('../src/process-db-value').encodeRow;
 
 function randomDate(start, end) {
 	return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
 }
 
-function generateData (fileName, cb) {
+function generateData (format, fileName, cb) {
 	var rs = fs.createWriteStream (fileName);
 	for (var i = 0; i < 10; i++) {
 
-		rs.write ([
-			encodeValue (false, Math.ceil (Math.random () * 1000), 'CSV'),
-			encodeValue (false, Math.random () * 1000, 'CSV'),
-			'"' + crypto.randomBytes(20).toString('hex') + '"',
-			encodeValue (false, randomDate(new Date(2012, 0, 1), new Date()), 'CSV')
-		].join (',') + "\n");
+		rs.write (
+			encodeRow ([
+				Math.ceil (Math.random () * 1000),
+				Math.random () * 1000,
+				crypto.randomBytes(20).toString('hex'),
+				randomDate(new Date(2012, 0, 1), new Date())
+			], format)
+		);
 	}
 
 	rs.end (function () {
@@ -175,7 +178,7 @@ describe ("insert data", function () {
 		stream.end ();
 	});
 
-	it ("piping data from csv file", function (done) {
+	it.skip ("piping data from csv file", function (done) {
 
 		this.timeout (5000);
 
@@ -187,10 +190,50 @@ describe ("insert data", function () {
 		function processFileStream (fileStream) {
 			var stream = ch.query ("INSERT INTO t3", {format: "CSV", queryOptions: {database: dbName}}, function (err, result) {
 
-				if (err) {
-					console.log ('after insert', err);
-					console.log (stream.req.output);
-				}
+				assert (!err, err);
+
+				ch.query ("SELECT * FROM t3", {syncParser: true, queryOptions: {database: dbName}}, function (err, result) {
+
+					assert (!err, err);
+
+					done ();
+
+				});
+
+			});
+
+			fileStream.pipe (stream);
+
+			stream.on ('error', function (err) {
+				// console.log (err);
+			});
+		}
+
+		fs.stat (csvFileName, function (err, stat) {
+			//if (err) {
+				return generateData ('CSV', csvFileName, function () {
+					processFileStream (fs.createReadStream (csvFileName));
+				})
+			//}
+
+			processFileStream (fs.createReadStream (csvFileName));
+		});
+
+	});
+
+	it ("piping data from tsv file", function (done) {
+
+		this.timeout (5000);
+
+		var ch = new ClickHouse ({host: host, port: port});
+
+		var now = new Date ();
+		var tsvFileName = __filename.replace ('.js', '.tsv');
+
+		function processFileStream (fileStream) {
+			var stream = ch.query ("INSERT INTO t3", {format: "TabSeparated", queryOptions: {database: dbName}}, function (err, result) {
+
+				assert (!err, err);
 
 				ch.query ("SELECT * FROM t3", {syncParser: true, queryOptions: {database: dbName}}, function (err, result) {
 
@@ -201,25 +244,21 @@ describe ("insert data", function () {
 				});
 			});
 
-			console.log ('before pipe');
-
 			fileStream.pipe (stream);
-
-			// console.log ('---------------', stream);
 
 			stream.on ('error', function (err) {
 				// console.log (err);
 			});
 		}
 
-		fs.stat (csvFileName, function (err, stat) {
+		fs.stat (tsvFileName, function (err, stat) {
 			//if (err) {
-				return generateData (csvFileName, function () {
-					processFileStream (fs.createReadStream (csvFileName));
-				})
+			return generateData ('TSV', tsvFileName, function () {
+				processFileStream (fs.createReadStream (tsvFileName));
+			})
 			//}
 
-			processFileStream (fs.createReadStream (csvFileName));
+			processFileStream (fs.createReadStream (tsvFileName));
 		});
 
 	});

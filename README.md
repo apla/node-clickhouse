@@ -49,6 +49,28 @@ stream.on ('end', function () {
   console.log ('rows in result set', stream.supplemental.rows_before_limit_at_least);
 });
 
+// insert from file
+
+var tsvStream = fs.createReadStream ('data.tsv');
+var clickhouseStream = clickHouse.query (statement, {inputFormat: 'TSV'});
+
+tsvStream.pipe (clickhouseStream);
+
+// insert row data
+var clickhouseStream = clickHouse.query (statement, {inputFormat: 'TSV'}, function (err) {
+
+  console.log ('Insert complete!');
+
+});
+
+// data will be formatted for you
+clickhouseStream.write ([1, 2.22, "erbgwerg", new Date ()]);
+
+// prepare data yourself
+clickhouseStream.write ("1\t2.22\terbgwerg\t2017-07-17 17:17:17");
+
+clickhouse.end ();
+
 ```
 
 API
@@ -151,7 +173,7 @@ with javascript: CSV and TabSeparated/TSV.
 
 CSV is useful for loading from file, thus you can read and pipe into clickhouse
 file contents. To activate CSV parsing you should set `inputFormat` option to `CSV`
-for driver or query:
+for driver or query (BEWARE: not works as expected, use TSV):
 
 ```javascript
 
@@ -165,7 +187,7 @@ csvStream.pipe (clickhouseStream);
 TSV is useful for loading from file and bulk loading from external sources, such as other databases.
 Only `\\`, `\t` and `\n` need to be escaped in strings; numbers, nulls,
 bools and date objects need some minor processing. You can send prepared TSV data strings
-(line ending will be appended automatically), buffers (always passed as is) or Arrays with fields (WIP).
+(line ending will be appended automatically), buffers (always passed as is) or Arrays with fields.
 
 Internally, every field will be converted to the format which ClickHouse can accept.
 Then escaped and joined with delimiter for the particular format.
