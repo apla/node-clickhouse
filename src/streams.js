@@ -121,11 +121,14 @@ RecordStream.prototype._read = function read () {
 // https://nodejs.org/en/docs/guides/backpressuring-in-streams/
 // https://nodejs.org/docs/latest/api/stream.html#stream_implementing_a_writable_stream
 
+// TODO: implement _writev
+
 RecordStream.prototype._write = function _write (chunk, enc, cb) {
 
 	if (!Buffer.isBuffer (chunk) && typeof chunk !== 'string')
 		chunk = encodeRow (chunk, this.format);
 
+	// there is no way to determine line ending efficiently for Buffer
 	if (typeof chunk === 'string') {
 		if (chunk.substr (chunk.length - 1) !== "\n") {
 			chunk = chunk + "\n";
@@ -133,35 +136,20 @@ RecordStream.prototype._write = function _write (chunk, enc, cb) {
 		chunk = Buffer.from ? Buffer.from (chunk, enc) : new Buffer (chunk, enc);
 	}
 
-	// there is no way to determine line ending efficiently for Buffer
-
 	if (!(chunk instanceof Buffer)) {
 		return this.emit ('error', new Error ('Incompatible format'));
-
 	}
 
-	this._canWrite = this.req.write (chunk);
-
-	if (!this._canWrite) {
-		this.req.once ('drain', function () {
-			// wait for drain, then emit drain event calling cb ()
-			cb ();
-		}.bind (this));
-
-		return;
-	}
-
-	cb ();
+	// node stores further write requests into `_writableState.bufferedRequest` chain
+	// until cb is called.
+	this._canWrite = this.req.write (chunk, cb);
 
 };
 
-RecordStream.prototype.end = function write (chunk, enc, cb) {
-	if (chunk)
-		this.write (chunk, enc);
+RecordStream.prototype.end = function end (chunk, enc, cb) {
 
-	this.req.once ('drain', function () {
-		this.req.end ();
-		cb && cb ();
+	RecordStream.super_.prototype.end.call (this, chunk, enc, function () {
+		this.req.end (cb);
 	}.bind (this));
 };
 

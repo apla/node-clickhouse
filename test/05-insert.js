@@ -1,8 +1,31 @@
 var ClickHouse = require ("../src/clickhouse");
 
 var assert = require ("assert");
+var fs     = require ("fs");
+var crypto = require ("crypto");
 
 var encodeValue = require ('../src/process-db-value').encodeValue;
+
+function randomDate(start, end) {
+	return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+}
+
+function generateData (fileName, cb) {
+	var rs = fs.createWriteStream (fileName);
+	for (var i = 0; i < 10; i++) {
+
+		rs.write ([
+			encodeValue (false, Math.ceil (Math.random () * 1000), 'CSV'),
+			encodeValue (false, Math.random () * 1000, 'CSV'),
+			'"' + crypto.randomBytes(20).toString('hex') + '"',
+			encodeValue (false, randomDate(new Date(2012, 0, 1), new Date()), 'CSV')
+		].join (',') + "\n");
+	}
+
+	rs.end (function () {
+		cb ();
+	});
+}
 
 describe ("insert data", function () {
 
@@ -150,6 +173,55 @@ describe ("insert data", function () {
 		// stream.write ([23, NaN, "yyy", new Date ()]);
 
 		stream.end ();
+	});
+
+	it ("piping data from csv file", function (done) {
+
+		this.timeout (5000);
+
+		var ch = new ClickHouse ({host: host, port: port});
+
+		var now = new Date ();
+		var csvFileName = __filename.replace ('.js', '.csv');
+
+		function processFileStream (fileStream) {
+			var stream = ch.query ("INSERT INTO t3", {format: "CSV", queryOptions: {database: dbName}}, function (err, result) {
+
+				if (err) {
+					console.log ('after insert', err);
+					console.log (stream.req.output);
+				}
+
+				ch.query ("SELECT * FROM t3", {syncParser: true, queryOptions: {database: dbName}}, function (err, result) {
+
+					assert (!err, err);
+
+					done ();
+
+				});
+			});
+
+			console.log ('before pipe');
+
+			fileStream.pipe (stream);
+
+			// console.log ('---------------', stream);
+
+			stream.on ('error', function (err) {
+				// console.log (err);
+			});
+		}
+
+		fs.stat (csvFileName, function (err, stat) {
+			//if (err) {
+				return generateData (csvFileName, function () {
+					processFileStream (fs.createReadStream (csvFileName));
+				})
+			//}
+
+			processFileStream (fs.createReadStream (csvFileName));
+		});
+
 	});
 
 	after (function (done) {
