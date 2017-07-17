@@ -162,4 +162,19 @@ describe ("select data from database", function () {
 		});
 	});
 
+	it ("select data in unsupported format", function (done) {
+
+		var ch = new ClickHouse ({host: host, port: port});
+
+		ch.query ("SELECT number FROM system.numbers LIMIT 10", {format: "CSV"}, function (err, result) {
+
+			assert (!err, err);
+
+			assert (result.match (/1\n2\n3\n4\n5\n6\n7\n8\n9/));
+
+			done ();
+
+		});
+	});
+
 });
