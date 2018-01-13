@@ -3,6 +3,9 @@
   "version": "1.5.0",
   "description": "Yandex ClickHouse database interface",
   "main": "src/clickhouse.js",
+  "bin": {
+    "clickhouse": "./bin/clickhouse"
+  },
   "scripts": {
     "launch-docker-image": "docker run --rm -d -p 8123:8123 --name clickhouse-server yandex/clickhouse-server",
     "stop-docker-image": "docker stop clickhouse-server",
@@ -28,6 +31,7 @@
   "homepage": "https://github.com/apla/node-clickhouse#readme",
   "dependencies": {
     "buffer-indexof-polyfill": "^1.0.1",
+    "commander": "^2.13.0",
     "object-assign": "^4.1.0"
   },
   "devDependencies": {
