@@ -172,7 +172,16 @@ function httpRequest (reqParams, reqData, cb) {
 		format: reqData.format
 	});
 
-	var req = http.request (reqParams, httpResponseHandler.bind (this, stream, reqParams, reqData, cb));
+	var req = http.request (reqParams, httpResponseHandler.bind (
+		this, stream, reqParams, reqData, cb
+	));
+
+	req.on ('error', function (e) {
+		// user should define callback or add event listener for the error event
+		if (!cb || (cb && stream.listeners ('error').length))
+			stream.emit ('error', e);
+		return cb && cb (e);
+	});
 
 	stream.req = req;
 
