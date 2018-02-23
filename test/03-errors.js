@@ -13,6 +13,18 @@ describe ("error parsing", function () {
 		port = process.env.CLICKHOUSE_PORT || 8123,
 		dbCreated = false;
 
+	it ("will not throw on http error", function (done) {
+		var ch = new ClickHouse ({host: host, port: 59999, useQueryString: true});
+		var stream = ch.query ("ABCDEFGHIJKLMN", {syncParser: true}, function (err, result) {
+			// assert (err);
+			// done ();
+		});
+
+		stream.on ('error', function (err) {
+			done();
+		});
+	});
+
 	it ("returns error for unknown sql", function (done) {
 		var ch = new ClickHouse ({host: host, port: port, useQueryString: true});
 		var stream = ch.query ("ABCDEFGHIJKLMN", {syncParser: true}, function (err, result) {
