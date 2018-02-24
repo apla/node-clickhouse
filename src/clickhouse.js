@@ -183,6 +183,18 @@ function httpRequest (reqParams, reqData, cb) {
 		return cb && cb (e);
 	});
 
+    function errorHandler (e) {
+        var err = parseError (e);
+
+        // user should define callback or add event listener for the error event
+        if (!cb || (cb && stream.listeners ('error').length))
+            stream.emit ('error', err);
+        return cb && cb (err);
+    }
+
+    // In case of error, we're just throw away data
+    req.on ('error', errorHandler);
+
 	stream.req = req;
 
 	if (reqData.query)
