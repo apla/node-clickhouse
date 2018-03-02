@@ -150,7 +150,7 @@ function httpResponseHandler (stream, reqParams, reqData, cb, response) {
 				stream.push (null);
 			}
 		} catch (e) {
-			if (!reqData.format.match (/^(JSON|JSONCompact)$/)) {
+			if (!reqData.format || !reqData.format.match (/^(JSON|JSONCompact)$/)) {
 				data = str.toString ('utf8');
 			} else {
 				return errorHandler (e);
@@ -284,6 +284,9 @@ ClickHouse.prototype.query = function (chQuery, options, cb) {
 			options.format = 'Values';
 			options.omitFormat = true;
 
+		} else if (chQuery.match (/INSERT\s+INTO\s+\S+\s+(?:\([^\)]+\)\s+)?SELECT/mi)) {
+			reqData.finalized  = true;
+			options.omitFormat = true;
 		} else {
 
 			reqData.finalized = false;
