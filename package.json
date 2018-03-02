@@ -8,7 +8,8 @@
     "stop-docker-image": "docker stop clickhouse-server",
     "test": "nyc mocha --recursive ./test -R spec",
     "report": "nyc report --reporter=lcov > coverage.lcov && codecov",
-    "simpletest": "mocha --recursive ./test -R spec",
+    "simpletest": "mocha --recursive -b ./test -R spec",
+    "inspect": "mocha --recursive --inspect --debug-brk -b ./test -R spec",
     "torturetest": "TORTURE=1 mocha -gc --recursive ./test -R spec"
   },
   "repository": {
@@ -34,7 +35,7 @@
     "bluebird": "^3.5.0",
     "codecov": "^2.2.0",
     "memwatch-next": "^0.3.0",
-    "mocha": "^2.5.3",
+    "mocha": "^3.4.2",
     "nyc": "^10.2.0"
   },
   "engines": {

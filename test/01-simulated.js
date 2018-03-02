@@ -39,7 +39,7 @@ var responses = {
 
 };
 
-describe ("simulated queries", function () {
+describe.skip ("simulated queries", function () {
 
 	var server,
 		host,

@@ -13,22 +13,16 @@ var JSONStream   = require ('./streams').JSONStream;
 var parseError = require ('./parse-error');
 
 function httpResponseHandler (stream, reqParams, reqData, cb, response) {
-	var str;
+
 	var error;
 
-	if (response.statusCode === 200) {
-		str = Buffer.alloc ? Buffer.alloc (0) : new Buffer (0);
-	} else {
-		error = Buffer.alloc ? Buffer.alloc (0) : new Buffer (0);
-	}
-
 	function errorHandler (e) {
-		var err = parseError (e);
+		error = parseError (e);
 
 		// user should define callback or add event listener for the error event
 		if (!cb || (cb && stream.listeners ('error').length))
-			stream.emit ('error', err);
-		return cb && cb (err);
+			stream.emit ('error', error);
+		return cb && cb (error);
 	}
 
 	// In case of error, we're just throw away data
@@ -45,7 +39,7 @@ function httpResponseHandler (stream, reqParams, reqData, cb, response) {
 	var symbolsTransferred = 0;
 
 	//another chunk of data has been received, so append it to `str`
-	response.on ('data', function (chunk) {
+	response.on ('_data', function (chunk) {
 
 		symbolsTransferred += chunk.length;
 
@@ -85,80 +79,61 @@ function httpResponseHandler (stream, reqParams, reqData, cb, response) {
 		}
 	});
 
+	var responseData = Buffer.alloc ? Buffer.alloc (0) : new Buffer (0),
+		chunk;
+
 	//the whole response has been received, so we just print it out here
-	response.on('end', function () {
+	stream.on ('response-end', function () {
 
-		// debug (response.headers);
+		console.log ('response end');
 
-		if (error) {
-			return errorHandler (error);
+		console.log (stream.format, reqData.syncParser, haveReaders());
+
+		function haveReaders () {
+			return stream.listeners ('data').length + stream.listeners ('readable').length;
 		}
 
-		var data;
+		if (stream.format && !reqData.syncParser) {
+			if (!haveReaders ()) {
+				// user want to skip data
+				console.warn ('Either subscribe to the stream data or use `syncParser` option');
 
-		var contentType = response.headers['content-type'];
-
-		if (response.statusCode === 200 && (
-			!contentType
-			|| contentType.indexOf ('text/plain') === 0
-			|| contentType.indexOf ('text/html') === 0 // WTF: xenial - no content-type, precise - text/html
-		)) {
-			// probably this is a ping response or any other successful response with *empty* body
-			stream.push (null);
-			cb && cb (null, str.toString ('utf8'));
-			return;
-		}
-
-		var supplemental = {};
-
-		// we already pushed all the data
-		if (jsonParser.columns.length) {
-			try {
-				supplemental = JSON.parse (jsonParser.supplementalString + str.toString ('utf8'));
-			} catch (e) {
-				// TODO
-			}
-			stream.supplemental = supplemental;
-
-			// end stream
-			stream.push (null);
-
-			cb && cb (null, Object.assign ({}, supplemental, {
-				meta: jsonParser.columns,
-				transferred: symbolsTransferred
-			}));
-
-			return;
-		}
-
-		// one shot data parsing, should be much faster for smaller datasets
-		try {
-			data = JSON.parse (str.toString ('utf8'));
-
-			data.transferred = symbolsTransferred;
-
-			if (data.meta) {
-				stream.emit ('metadata', data.meta);
+				stream.cleanBuffer ();
 			}
 
-			if (data.data) {
-				// no highWatermark support
-				data.data.forEach (function (row) {
-					stream.push (row);
-				});
 
-				stream.push (null);
-			}
-		} catch (e) {
-			if (!reqData.format.match (/^(JSON|JSONCompact)$/)) {
-				data = str.toString ('utf8');
-			} else {
-				return errorHandler (e);
+
+		} else {
+			// console.log (stream);
+
+			responseData = stream.consume (stream);
+
+			if (reqData.syncParser) {
+				console.log (1234)
 			}
 		}
 
-		cb && cb (null, data);
 	});
+
+	//the whole response has been received, so we just print it out here
+	stream.on ('end', function () {
+
+		console.log ('read end', responseData);
+
+		return responseData && !error && cb && cb (null, responseData);
+
+		!error && cb && cb (null, Object.assign (
+			{},
+			stream.supplemental,
+			{
+				meta: stream.jsonParser.columns,
+				transferred: stream.transferred
+			}
+		));
+	});
+
+
+	stream.res = response;
 
 }
 

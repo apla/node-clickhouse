@@ -36,7 +36,7 @@ describe ("real server", function () {
 		});
 	});
 
-	it ("pings with options as host", function (done) {
+	it.skip ("pings with options as host", function (done) {
 		var ch = new ClickHouse (host);
 		ch.ping (function (err, ok) {
 			assert.ifError (err);
@@ -126,8 +126,7 @@ describe ("real server", function () {
 		ch.query ("INSERT INTO t VALUES (1),(2),(3)", {queryOptions: {database: 'node_clickhouse_test'}}, function (err, result) {
 			assert (!err, err);
 
-			// let's wait a few seconds
-			setTimeout (function () {done ()}, 500);
+			done ();
 		});
 	});
 
@@ -142,6 +141,12 @@ describe ("real server", function () {
 
 		stream.on ('end', function () {
 
+			console.log (rows);
+
+			assert.equal (rows[0][0], 1);
+			assert.equal (rows[1][0], 2);
+			assert.equal (rows[2][0], 3);
+
 			done();
 		});
 	});
@@ -149,11 +154,8 @@ describe ("real server", function () {
 
 	after (function (done) {
 
-		if (!dbCreated)
-			return done ();
-
 		var ch = new ClickHouse ({host: host, port: port});
-		ch.query ("DROP DATABASE node_clickhouse_test", function (err, result) {
+		ch.query ("DROP DATABASE IF EXISTS node_clickhouse_test", function (err, result) {
 			assert (!err);
 
 			// console.log (result);
