@@ -210,7 +210,7 @@ describe ("insert data", function () {
 		// stream.end ();
 	});
 
-	it.skip ("piping data from csv file", function (done) {
+	it ("piping data from csv file", function (done) {
 
 		this.timeout (5000);
 
