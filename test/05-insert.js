@@ -164,6 +164,8 @@ describe ("insert data", function () {
 				assert.equal (result.data[1][2], "wrqwefqwef");
 				assert.equal (result.data[1][3], "2017-07-07 12:12:12");
 
+				assert.equal (result.data.length, 2);
+
 				done ();
 
 			});
@@ -176,6 +178,36 @@ describe ("insert data", function () {
 		// stream.write ([23, NaN, "yyy", new Date ()]);
 
 		stream.end ();
+	});
+
+	it ("inserts from select", function (done) {
+		var ch = new ClickHouse ({host: host, port: port, queryOptions: {database: dbName}});
+
+		var now = new Date ();
+
+		var stream = ch.query ("INSERT INTO t3 SELECT * FROM t2", {}, function (err, result) {
+			assert (!err, err);
+
+			ch.query ("SELECT * FROM t3", {syncParser: true, queryOptions: {database: dbName}}, function (err, result) {
+
+				assert.equal (result.data[2][0], 1);
+				assert.equal (result.data[2][1], 2.22);
+				assert.equal (result.data[2][2], null);
+				assert.equal (result.data[2][3], now.toISOString().replace (/\..*/, '').replace ('T', ' '));
+
+				assert.equal (result.data[3][0], 20);
+				assert.equal (result.data[3][1], 1.11);
+				assert.equal (result.data[3][2], "wrqwefqwef");
+				assert.equal (result.data[3][3], "2017-07-07 12:12:12");
+
+				assert.equal (result.data.length, 4);
+
+				done ();
+
+			});
+		});
+
+		// stream.end ();
 	});
 
 	it.skip ("piping data from csv file", function (done) {
