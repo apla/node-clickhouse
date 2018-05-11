@@ -99,6 +99,8 @@ for [http.request](https://nodejs.org/api/http.html#http_http_request_options_ca
  * **auth**:     authentication as `user:password`, optional
  * **host**:     host to connect, can contain port name
  * **pathname**: pathname of ClickHouse server or `/` if omited,
+ * **port**:     port number,
+ * **protocol**: "https:" or "http:", default "http:".
 
 `queryOptions` object can contain any option from Settings (docs:
 [en](https://clickhouse.yandex/docs/en/operations/settings/index.html)

@@ -1,4 +1,5 @@
 var http = require ('http');
+var https = require('https');
 var url  = require ('url');
 var qs   = require ('querystring');
 var util = require ('util');
@@ -171,8 +172,8 @@ function httpRequest (reqParams, reqData, cb) {
 	var stream = new RecordStream ({
 		format: reqData.format
 	});
-
-	var req = http.request (reqParams, httpResponseHandler.bind (
+	var requestInstance = reqParams.protocol === 'https:' ? https : http;
+	var req = requestInstance.request (reqParams, httpResponseHandler.bind (
 		this, stream, reqParams, reqData, cb
 	));
 
