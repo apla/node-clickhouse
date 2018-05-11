@@ -2,15 +2,15 @@ language: node_js
 matrix:
   include:
     - node_js: '0.10'
-      env: _CXXAUTO=1
+#      env: _CXXAUTO=1
 #    - node_js: '0.12'
 #      env: _CXXAUTO=1
 #    - node_js: '4'
 #      env: CXX=g++-4.8
     - node_js: '6'
-      env: CXX=g++-4.8
+#      env: CXX=g++-4.8
     - node_js: '8'
-      env: CXX=g++-4.8
+#      env: CXX=g++-4.8
 dist: trusty
 sudo: required
 addons:
@@ -18,8 +18,8 @@ addons:
     sources:
       - ubuntu-toolchain-r-test
     packages:
-      - gcc-4.8
-      - g++-4.8
+#      - gcc-4.8
+#      - g++-4.8
 before_script:
   - sudo apt-key adv --keyserver keyserver.ubuntu.com --recv E0C56BD4
   - echo "deb http://repo.yandex.ru/clickhouse/deb/stable/ main/" | sudo tee -a /etc/apt/sources.list
@@ -31,8 +31,8 @@ before_script:
   - (tail -n 100 /var/log/clickhouse-server/clickhouse-server.err.log || exit 0)
   - (tail -n 100 /var/log/clickhouse-server/clickhouse-server.log || exit 0)
   - (id metrika || exit 0)
-  - (ls -la /opt/clickhouse/data/default/ || exit 0)
-  - (ls -la /opt/clickhouse/metadata/default/ || exit 0)
+  - (ls -la /var/lib/clickhouse/data/default/ || exit 0)
+  - (ls -la /var/lib/clickhouse/metadata/default/ || exit 0)
   - curl -v "http://127.0.0.1:8123/"
 after_script:
   - npm run report
