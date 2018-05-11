@@ -11,6 +11,7 @@ matrix:
       env: CXX=g++-4.8
     - node_js: '8'
       env: CXX=g++-4.8
+dist: trusty
 sudo: required
 addons:
   apt:
@@ -21,7 +22,7 @@ addons:
       - g++-4.8
 before_script:
   - sudo apt-key adv --keyserver keyserver.ubuntu.com --recv E0C56BD4
-  - echo "deb http://repo.yandex.ru/clickhouse/precise stable main" | sudo tee -a /etc/apt/sources.list
+  - echo "deb http://repo.yandex.ru/clickhouse/deb/stable/ main/" | sudo tee -a /etc/apt/sources.list
   - sudo apt-get update -qq
   - sudo apt-get install clickhouse-server-common clickhouse-client -y
   - sudo sed -i -- 's/listen_host>::/listen_host>0.0.0.0/g' /etc/clickhouse-server/config.xml
