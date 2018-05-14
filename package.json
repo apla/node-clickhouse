@@ -1,6 +1,6 @@
 {
   "name": "@apla/clickhouse",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "Yandex ClickHouse database interface",
   "main": "src/clickhouse.js",
   "scripts": {
