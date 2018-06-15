@@ -291,6 +291,39 @@ describe ("insert data", function () {
 
 	});
 
+    it ("creates a table 4", function (done) {
+        var ch = new ClickHouse ({host: host, port: port, queryOptions: {database: dbName}});
+        ch.query ("CREATE TABLE t4 (arrayString Array(String), arrayInt Array(UInt32)) ENGINE = Memory", function (err, result) {
+            assert (!err);
+
+            done ();
+        });
+    });
+
+    it ("inserts array with format JSON using stream", function (done) {
+        var ch = new ClickHouse ({host: host, port: port});
+
+        var stream = ch.query ("INSERT INTO t4", {queryOptions: {database: dbName}, format: "JSONEachRow"}, function (err, result) {
+            assert (!err, err);
+
+            ch.query ("SELECT * FROM t4", {syncParser: true, queryOptions: {database: dbName}, dataObjects: "JSON"}, function (err, result) {
+
+                assert.deepEqual (result.data[0].arrayString, ['first', 'second']);
+                assert.deepEqual (result.data[0].arrayInt, [1, 0, 100]);
+
+                done ();
+
+            });
+        });
+
+        stream.write ({
+            arrayString: ['first', 'second'],
+			arrayInt: [1, 0, 100]
+		});
+
+        stream.end ();
+    });
+
 	after (function (done) {
 
 		if (!dbCreated)
