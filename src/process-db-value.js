@@ -95,7 +95,9 @@ function encodeValue (quote, v, format) {
 				return ("" + v.valueOf ()).substr (0, 10);
 			// you can add array items
 			if (v instanceof Array)
-				return '[' + v.map (encodeValue.bind (this, true, format)).join (',') + ']'
+				return v.map (function(item) {
+					return encodeValue(true, item, format);
+				})
 			// TODO: tuples support
 			if (!format) console.trace ();
 			if (v === null)
