@@ -307,19 +307,17 @@ describe ("insert data", function () {
             assert (!err, err);
 
             ch.query ("SELECT * FROM t4", {syncParser: true, queryOptions: {database: dbName}, dataObjects: "JSON"}, function (err, result) {
-
                 assert.deepEqual (result.data[0].arrayString, ['first', 'second']);
                 assert.deepEqual (result.data[0].arrayInt, [1, 0, 100]);
 
                 done ();
-
             });
         });
 
         stream.write ({
             arrayString: ['first', 'second'],
-			arrayInt: [1, 0, 100]
-		});
+            arrayInt: [1, 0, 100]
+        });
 
         stream.end ();
     });
