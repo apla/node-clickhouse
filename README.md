@@ -202,7 +202,7 @@ for driver or query (BEWARE: not works as expected, use TSV):
 ```javascript
 
 var csvStream = fs.createReadStream ('data.csv');
-var clickhouseStream = clickHouse.query (statement, {inputFormat: CSV});
+var clickhouseStream = ch.query (statement, {inputFormat: CSV});
 
 csvStream.pipe (clickhouseStream);
 
@@ -220,6 +220,12 @@ If you ever need to store rows (in arrays) and send preformatted data, you can d
 ClickHouse also supports [JSONEachRow](https://clickhouse.yandex/docs/en/formats/jsoneachrow.html) format
 which can be useful to insert javascript objects if you have such recordset.
 
+```js
+const stream = ch.query (statement, {format: 'JSONEachRow'})
+
+stream.write (object) // Do write as many times as possible
+stream.end () // And don't forget to finish insert query
+```
 
 ## Memory size
 
