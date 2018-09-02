@@ -325,7 +325,9 @@ ClickHouse.prototype.query = function (chQuery, options, cb) {
 ClickHouse.prototype.querying = function (chQuery, options) {
 
 	return new Promise (function (resolve, reject) {
-		var stream = this.query (chQuery, options, function (err, data) {
+		// Force override `syncParser` option when using promise api
+		const queryOptions = Object.assign ({}, options, {syncParser: true})
+		var stream = this.query (chQuery, queryOptions, function (err, data) {
 			if (err)
 				return reject (err);
 			resolve (data);

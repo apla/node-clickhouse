@@ -46,9 +46,9 @@ describe ("select data from database", function () {
 		});
 	});
 
-	it ("selects numbers using promise", function () {
+	it ("selects numbers using promise should already have parsed data", function () {
 		var ch = new ClickHouse ({host: host, port: port, useQueryString: true});
-		return ch.querying ("SELECT number FROM system.numbers LIMIT 10", {syncParser: true}).then (function (result) {
+		return ch.querying ("SELECT number FROM system.numbers LIMIT 10").then (function (result) {
 			assert (result.meta, "result should be Object with `data` key to represent rows");
 			assert (result.data, "result should be Object with `meta` key to represent column info");
 			assert (result.meta.constructor === Array, "metadata is an array with column descriptions");
@@ -56,6 +56,23 @@ describe ("select data from database", function () {
 			assert (result.data.constructor === Array, "data is a row set");
 			assert (result.data[0].constructor === Array, "each row contains list of values (using FORMAT JSONCompact)");
 			assert (result.data[9][0] === "9"); // this should be corrected at database side
+			assert (result.rows === 10);
+			assert (result.rows_before_limit_at_least === 10);
+			return Promise.resolve ();
+		});
+	});
+
+	it ("selects numbers as dataObjects using promise", function () {
+		var ch = new ClickHouse ({host: host, port: port, useQueryString: true, dataObjects: true});
+		return ch.querying ("SELECT number FROM system.numbers LIMIT 10").then (function (result) {
+			assert (result.meta, "result should be Object with `data` key to represent rows");
+			assert (result.data, "result should be Object with `meta` key to represent column info");
+			assert (result.meta.constructor === Array, "metadata is an array with column descriptions");
+			assert (result.meta[0].name === "number");
+			assert (result.data.constructor === Array, "data is a row set");
+			assert (result.data[0].constructor === Object, "each row contains key-valued rows (using FORMAT JSON)");
+			assert (result.data[9].number === "9");
+			assert (result.data.length === 10);
 			assert (result.rows === 10);
 			assert (result.rows_before_limit_at_least === 10);
 			return Promise.resolve ();
