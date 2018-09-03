@@ -95,6 +95,11 @@ describe ("insert data", function () {
 		});
 	});
 
+	it ("inserts some data using promise", function () {
+		var ch = new ClickHouse ({host: host, port: port});
+		return ch.querying ("INSERT INTO t VALUES (1),(2),(3)", {queryOptions: {database: dbName}});
+	});
+
 	it ("creates a table 2", function (done) {
 		var ch = new ClickHouse ({host: host, port: port, queryOptions: {database: dbName}});
 		ch.query ("CREATE TABLE t2 (a UInt8, b Float32, x Nullable(String), z DateTime) ENGINE = Memory", function (err, result) {

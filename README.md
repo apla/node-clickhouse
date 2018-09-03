@@ -153,9 +153,31 @@ a standard node `(error, result)` signature.
 You should have at least one error handler listening. Via callbacks or via stream errors.
 If you have callback and stream listener, you'll have error notification in both listeners.
 
-### clickHouse.querying (statement, [options]).then (…)
+## Promise interface
 
-Promise interface. Similar to the callback one.
+Promise interface **is not recommended** for `INSERT` and `SELECT` queries.
+* `INSERT` cannot bulk load data with promise interface
+* `SELECT` will collect entire query result in the memory
+
+With promise interface query result are parsed snchronously.
+This means that large query result in promise interface:
+* Will snchronously block JS thread/event loop
+* May lead to memory leaks in your app
+
+Use it only for queries where resulting data size is is known and extreemly small.<br/>
+The good cases to use it is `DESCRIBE TABLE` or `EXISTS TABLE`
+
+### clickHouse.querying (statement, [options]).then (…)
+Return `promise`, that will be resolved with entire query result.
+This is an alias to `ch.query(query, {syncParser: true}, (error, data) => {})`
+
+Usage:
+```js
+  ch.querying ("SELECT 1").then((result) => console.log(result.data))
+  // [ [ 1 ] ]
+  ch.querying ("DESCRIBE TABLE system.numbers", {dataObjects: true}).then((result) => console.log(result.data))
+  // [ { name: 'number', type: 'UInt64', default_type: '', default_expression: '' } ]
+```
 
 ### clickHouse.ping (function (err, response) {})
 
@@ -180,7 +202,7 @@ for driver or query (BEWARE: not works as expected, use TSV):
 ```javascript
 
 var csvStream = fs.createReadStream ('data.csv');
-var clickhouseStream = clickHouse.query (statement, {inputFormat: CSV});
+var clickhouseStream = ch.query (statement, {inputFormat: CSV});
 
 csvStream.pipe (clickhouseStream);
 
@@ -198,6 +220,12 @@ If you ever need to store rows (in arrays) and send preformatted data, you can d
 ClickHouse also supports [JSONEachRow](https://clickhouse.yandex/docs/en/formats/jsoneachrow.html) format
 which can be useful to insert javascript objects if you have such recordset.
 
+```js
+const stream = ch.query (statement, {format: 'JSONEachRow'})
+
+stream.write (object) // Do write as many times as possible
+stream.end () // And don't forget to finish insert query
+```
 
 ## Memory size
 
@@ -216,10 +244,3 @@ In this case whole JSON response from the server will be read into memory,
 then parsed into memory hogging your CPU. Default parser will parse server response
 line by line and emits events. This is slower, but much more memory and CPU efficient
 for larger datasets.
-
-## Promise interface
-
-Promise interface have some restrictions. It is not recommended to use this interface
-for `INSERT` and `SELECT` queries. For the `INSERT` you cannot bulk load data via stream,
-`SELECT` will collect all the records in the memory. For simple usage where data size
-is controlled it is ok.
