@@ -194,4 +194,29 @@ describe ("select data from database", function () {
 		});
 	});
 
+	it("can cancel an ongoing select by calling destroy", function (done) {
+		var RecordStream = require("../src/streams").RecordStream;
+		if (typeof RecordStream.prototype.destroy !== "function") {
+			// If current Node.js version lacks Stream#destroy impl, skip the test
+			this.skip ();
+			return;
+		}
+
+		var ch = new ClickHouse({ host: host, port: port, useQueryString: true });
+		var rows = [];
+		var limit = 10000;
+		var stream = ch.query ("SELECT number FROM system.numbers LIMIT " + limit, function () {
+			assert (stream.destroyed);
+			assert (rows.length < limit);
+			done ();
+		});
+
+		stream.on ('data', function (row) {
+			rows.push (row);
+		});
+
+		stream.once ('data', function() {
+			stream.destroy();			
+		});
+	});
 });
