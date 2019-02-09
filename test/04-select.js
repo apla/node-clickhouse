@@ -202,12 +202,13 @@ describe ("select data from database", function () {
 			return;
 		}
 
-		var ch = new ClickHouse({ host: host, port: port, useQueryString: true });
+		var ch = new ClickHouse ({host: host, port: port});
 		var rows = [];
 		var limit = 10000;
 		var stream = ch.query ("SELECT number FROM system.numbers LIMIT " + limit, function () {
 			assert (stream.destroyed);
 			assert (rows.length < limit);
+
 			done ();
 		});
 
@@ -215,8 +216,8 @@ describe ("select data from database", function () {
 			rows.push (row);
 		});
 
-		stream.once ('data', function() {
-			stream.destroy();			
+		stream.once ('data', function () {
+			stream.destroy ();
 		});
 	});
 });
