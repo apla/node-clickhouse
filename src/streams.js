@@ -146,6 +146,16 @@ RecordStream.prototype._write = function _write (chunk, enc, cb) {
 
 };
 
+RecordStream.prototype._destroy = function _destroy (err, cb) {
+	
+	process.nextTick (function () {
+		RecordStream.super_.prototype._destroy.call (this, err, function (destroyErr) {
+			this.req.destroy (err);
+			cb (destroyErr || err);
+		}.bind (this));
+	}.bind (this));
+}
+
 RecordStream.prototype.end = function end (chunk, enc, cb) {
 
 	RecordStream.super_.prototype.end.call (this, chunk, enc, function () {
