@@ -16,6 +16,7 @@ try {
 	}
 } catch (err) {
 	if (process.env.TORTURE) {
+		console.error ("For the torture test you should install memwatch-next (node 8) or @airbnb/memwatch (node >= 10)");
 		console.error (err);
 		process.exit (1);
 	}
