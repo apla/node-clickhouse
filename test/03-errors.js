@@ -85,8 +85,9 @@ describe ("error parsing", function () {
 
 			assert (err);
 			assert (err.message === 'Empty query' || err.message.match (/Syntax error/));
-			assert.ifError ('lineno' in err);
-			assert.ifError ('colno'  in err);
+			// clickhouse doesn't return lineno and colno for some queries
+			// assert.ifError ('lineno' in err);
+			// assert.ifError ('colno'  in err);
 
 			countCallbacks (err);
 		});
@@ -103,8 +104,9 @@ describe ("error parsing", function () {
 
 			assert (err);
 			assert.ifError (err.message.match (/Syntax error/));
-			assert.ifError ('lineno' in err);
-			assert.ifError ('colno'  in err);
+			// clickhouse doesn't return lineno and colno for some queries
+			// assert.ifError ('lineno' in err);
+			// assert.ifError ('colno'  in err);
 
 			done();
 		});
