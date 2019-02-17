@@ -33,9 +33,11 @@
   "devDependencies": {
     "bluebird": "^3.5.0",
     "codecov": "^2.2.0",
-    "memwatch-next": "^0.3.0",
     "mocha": "^2.5.3",
     "nyc": "^10.2.0"
+  },
+  "optionalDependencies": {
+    "memwatch-next": "^0.3.0"
   },
   "engines": {
     "node": ">=0.10"
