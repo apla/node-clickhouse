@@ -6,7 +6,20 @@ var qs   = require ('querystring');
 
 var assert = require ("assert");
 
-var memwatch = require('memwatch-next');
+var memwatch;
+try {
+	var nodeMajorVersion = parseInt(process.version.substr(1));
+	if (nodeMajorVersion >= 10) {
+		memwatch = require('memwatch');
+	} else {
+		memwatch = require('memwatch-next');
+	}
+} catch (err) {
+	if (process.env.TORTURE) {
+		console.error (err);
+		process.exit (1);
+	}
+}
 
 // replace with it, if you want to run this test suite
 var method  = process.env.TORTURE ? it : it.skip;
@@ -37,7 +50,7 @@ describe ("torturing", function () {
 		baselineMemoryUsage = process.memoryUsage();
 
 	before (function () {
-		memwatch.on ('leak', function (info) {
+		memwatch && memwatch.on ('leak', function (info) {
 			console.log (info);
 		});
 
