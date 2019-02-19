@@ -159,12 +159,12 @@ Promise interface **is not recommended** for `INSERT` and `SELECT` queries.
 * `INSERT` cannot bulk load data with promise interface
 * `SELECT` will collect entire query result in the memory
 
-With promise interface query result are parsed snchronously.
+With promise interface query result are parsed synchronously.
 This means that large query result in promise interface:
-* Will snchronously block JS thread/event loop
+* Will synchronously block JS thread/event loop
 * May lead to memory leaks in your app
 
-Use it only for queries where resulting data size is is known and extreemly small.<br/>
+Use it only for queries where resulting data size is is known and extremely small.<br/>
 The good cases to use it is `DESCRIBE TABLE` or `EXISTS TABLE`
 
 ### clickHouse.querying (statement, [options]).then (…)
