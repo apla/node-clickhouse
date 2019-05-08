@@ -5,7 +5,7 @@ if (nodeVer[0] >= 6)
 
 var legacyModulesInstallCmd = 'npm install object-assign buffer-indexof-polyfill';
 
-if (require.main === module) {
+if (process.mainModule === module) {
 	var spawn = require ('child_process').spawn;
 
 	var child = spawn (legacyModulesInstallCmd);
