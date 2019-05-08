@@ -35,5 +35,6 @@ before_script:
   - (ls -la /var/lib/clickhouse/data/default/ || exit 0)
   - (ls -la /var/lib/clickhouse/metadata/default/ || exit 0)
   - curl -v "http://127.0.0.1:8123/"
+  - npm run legacy-install
 after_script:
   - npm run report
