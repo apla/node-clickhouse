@@ -84,7 +84,7 @@ describe ("error parsing", function () {
 			// console.log (err); // failed at end of query
 
 			assert (err);
-			assert (err.message === 'Empty query' || err.message.match (/Syntax error/));
+			assert (err.message === 'Empty query' || err.message.match (/Syntax error/), err);
 			// clickhouse doesn't return lineno and colno for some queries
 			// assert.ifError ('lineno' in err);
 			// assert.ifError ('colno'  in err);
