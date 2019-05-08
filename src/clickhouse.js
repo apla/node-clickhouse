@@ -182,7 +182,11 @@ function httpRequest (reqParams, reqData, cb) {
 		if (!cb || (cb && stream.listeners ('error').length))
 			stream.emit ('error', e);
 		return cb && cb (e);
-	});
+  });
+  
+  req.on('timeout', function (e) {
+    req.abort();
+  })
 
 	stream.req = req;
 
@@ -213,7 +217,7 @@ ClickHouse.prototype.getReqParams = function () {
 	var urlObject = {};
 
 	// avoid to set defaults - node http module is not happy
-	"protocol auth host hostname port path localAddress headers agent createConnection".split (" ").forEach (function (k) {
+	"protocol auth host hostname port path localAddress headers agent createConnection timeout".split (" ").forEach (function (k) {
 		if (this.options[k] !== undefined)
 			urlObject[k] = this.options[k];
 	}, this);
