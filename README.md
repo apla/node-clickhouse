@@ -12,7 +12,7 @@ Synopsis
 ---
 
 ```javascript
-var ch = new ClickHouse ({host: clickhouse.host, port: 8123, auth: "user:password"});
+var ch = new ClickHouse ({host: clickhouse.host, port: 8123, user, password});
 // or
 var ch = new ClickHouse (clickhouse.host);
 
@@ -96,7 +96,8 @@ If you provide options as a string, they are assumed as a host parameter in conn
 Connection options (accept all options documented
 for [http.request](https://nodejs.org/api/http.html#http_http_request_options_callback)):
 
- * **auth**:     authentication as `user:password`, optional
+ * **user**:     authentication user, optional
+ * **password**:     authentication password, optional
  * **host**:     host to connect, can contain port name
  * **pathname**: pathname of ClickHouse server or `/` if omited,
  * **port**:     port number,

@@ -13,6 +13,8 @@ var JSONStream   = require ('./streams').JSONStream;
 
 var parseError = require ('./parse-error');
 
+var NATIVE_HTTP_OPTIONS = require ('./consts').NATIVE_HTTP_OPTIONS
+
 function httpResponseHandler (stream, reqParams, reqData, cb, response) {
 	var str;
 	var error;
@@ -183,7 +185,7 @@ function httpRequest (reqParams, reqData, cb) {
 			stream.emit ('error', e);
 		return cb && cb (e);
   });
-  
+
   req.on('timeout', function (e) {
     req.abort();
   })
@@ -217,10 +219,15 @@ ClickHouse.prototype.getReqParams = function () {
 	var urlObject = {};
 
 	// avoid to set defaults - node http module is not happy
-	"protocol auth host hostname port path localAddress headers agent createConnection timeout".split (" ").forEach (function (k) {
-		if (this.options[k] !== undefined)
+	NATIVE_HTTP_OPTIONS.forEach (function (k) {
+		if (this.options.hasOwnProperty(k))
 			urlObject[k] = this.options[k];
 	}, this);
+	if (this.options.hasOwnProperty('user') || this.options.hasOwnProperty('password')) {
+		urlObject.auth = encodeURIComponent(this.options.user || 'default')
+			+ ':'
+			+ encodeURIComponent(this.options.password || '')
+	}
 
 	urlObject.method = 'POST';
 
