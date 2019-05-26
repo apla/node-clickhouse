@@ -6,10 +6,11 @@ var util = require ('util');
 
 // var debug = require ('debug')('clickhouse');
 
-require ('./legacy-support');
-
 var RecordStream = require ('./streams').RecordStream;
 var JSONStream   = require ('./streams').JSONStream;
+
+// node <6 polyfill
+require('buffer-indexof-polyfill')
 
 var parseError = require ('./parse-error');
 
@@ -183,7 +184,7 @@ function httpRequest (reqParams, reqData, cb) {
 			stream.emit ('error', e);
 		return cb && cb (e);
   });
-  
+
   req.on('timeout', function (e) {
     req.abort();
   })

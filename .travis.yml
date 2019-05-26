@@ -1,16 +1,16 @@
 language: node_js
 matrix:
   include:
+# Babel runtime aren't working on node <= 6
 #    - node_js: '0.10'
-#      env: _CXXAUTO=1
+#      env: BABEL_ENV=legacy
 #    - node_js: '0.12'
-#      env: _CXXAUTO=1
+#      env: BABEL_ENV=legacy
 #    - node_js: '4'
-#      env: CXX=g++-4.8
+#      env: BABEL_ENV=legacy
     - node_js: '6'
-#      env: CXX=g++-4.8
+      env: BABEL_ENV=legacy
     - node_js: '8'
-#      env: CXX=g++-4.8
     - node_js: '10'
 dist: trusty
 sudo: required
@@ -35,6 +35,7 @@ before_script:
   - (ls -la /var/lib/clickhouse/data/default/ || exit 0)
   - (ls -la /var/lib/clickhouse/metadata/default/ || exit 0)
   - curl -v "http://127.0.0.1:8123/"
-  - npm run legacy-install
+script:
+  - npm run test
 after_script:
   - npm run report

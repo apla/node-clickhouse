@@ -1,0 +1,23 @@
+{
+  "env": {
+    "default": {
+      "presets": [
+        ["@babel/preset-env", {
+          "targets": "node 8.0",
+          "useBuiltIns": "usage",
+          "corejs": 3,
+          "exclude": ["es.promise", "es.string.trim"]
+        }]
+      ]
+    },
+    "legacy": {
+      "presets": [
+        ["@babel/preset-env", {
+          "targets": "node 0.10",
+          "useBuiltIns": "usage",
+          "corejs": 3
+        }]
+      ]
+    },
+  }
+}
