@@ -248,7 +248,7 @@ ClickHouse.prototype.query = function (chQuery, options, cb) {
 	options.omitFormat  = options.omitFormat  || this.options.omitFormat  || false;
 	options.dataObjects = options.dataObjects || this.options.dataObjects || false;
 	options.format      = options.format      || this.options.format      || null;
-	options.readonly    = options.readonly    || this.options.readonly    || false;
+	options.readonly    = options.readonly    || this.options.readonly    || this.options.useQueryString || false;
 
 	// we're adding `queryOptions` passed for constructor if any
 	var queryObject = Object.assign ({}, this.options.queryOptions, options.queryOptions);
