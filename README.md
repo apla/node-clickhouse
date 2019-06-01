@@ -76,70 +76,100 @@ clickhouse.end ();
 API
 ---
 
-### new ClickHouse (options)
+### `new ClickHouse (options: string | Options)`
 
+#### `options: string`
+String are assumed as a host parameter.
 ```javascript
-var options = {
-  host: "clickhouse.msk",
-  queryOptions: {
-    profile: "web",
-    database: "test"
-  },
-  omitFormat: false,
-  readonly: true,
-};
-
-var clickHouse = new ClickHouse (options);
+const clickHouse = new ClickHouse ('clickhouse.msk')
 ```
 
-If you provide options as a string, they are assumed as a host parameter in connection options
+#### `options: Options`
+
+##### `host` Required
+Host to connect
+##### `user`
+Authentication user.
+##### `password`
+Authentication password
+##### `pathname` Default: `/`
+pathname of ClickHouse server
+##### `port` Default: `8123`
+port number,
+##### `protocol` Default: `'http:'`
+`'https:'` or `'http:'`.
+
+##### `dataObjects` Default: `false`
+By default (`false`), you'll receive array of values for each row.
+If you set `dataObjects: true`, every row will become an object with format: `{fieldName: fieldValue, …}`.
+Alias to `format: 'JSON'`
+##### `format` Default: `JSONCompact`
+Adds the `FORMAT` statement for query. Specifies format of [selected](https://clickhouse.yandex/docs/en/query_language/select/#format-clause) or [inserted](https://clickhouse.yandex/docs/en/query_language/insert_into/#insert) data.
+See ["Formats for input and output data"](https://clickhouse.yandex/docs/en/interfaces/formats/#formats)
+
+##### `syncParser` Default: `false`
+Collects all data, then parse entire response.
+**Not recommended for large amounts of data!**
+May be faster, but for large datasets all your dataset goes into memory (actually, entire response + entire dataset).
+
+##### `omitFormat` Default `false`
+By default `FORMAT JSONCompact` statement will be added to the query if it did not have it.
+You can change disable this behaviour by providing this option.
 
 Connection options (accept all options documented
 for [http.request](https://nodejs.org/api/http.html#http_http_request_options_callback)):
 
- * **user**:     authentication user, optional
- * **password**:     authentication password, optional
- * **host**:     host to connect, can contain port name
- * **pathname**: pathname of ClickHouse server or `/` if omited,
- * **port**:     port number,
- * **protocol**: "https:" or "http:", default "http:".
+##### `queryOptions`
+Object, can contain any option from [Settings](https://clickhouse.yandex/docs/en/operations/settings/index.html), [Restrictions](https://clickhouse.yandex/docs/en/operations/settings/query_complexity/) and [Permissions](https://clickhouse.yandex/docs/en/operations/settings/permissions_for_queries/).
 
-`queryOptions` object can contain any option from Settings (docs:
-[en](https://clickhouse.yandex/docs/en/operations/settings/index.html)
-[ru](https://clickhouse.yandex/docs/ru/operations/settings/index.html)
-)
+ ```javascript
+   queryOptions: {
+     database: "test",
+     profile: "web",
+     readonly: 2,
+     force_index_by_date: 1,
+     max_rows_to_read: 10 * 1e6,
+     insert_quorum: 2,
+   },
+```
 
-For example:
+##### `timeout`, `headers`, `agent`, `localAddress`, `servername` and all other [http.request](https://nodejs.org/api/http.html#http_http_request_options_callback) or [https.request](https://nodejs.org/api/https.html#https_https_request_options_callback) options are also available.
 
- * **database**: default database name to lookup tables etc.
- * **profile**: settings profile to use
- * **readonly**: don't allow to change data
- * **max_rows_to_read**: self explanatory
+```javascript
+new ClickHouse ({
+  host: 'clickhouse.msk',
+  port: '8443',
+  protocol: 'https:',
+  checkServerIdentity: () => { /* Check something here */ }
+})
+```
 
-Driver options:
-
- * **dataObjects**: use `FORMAT JSON` instead of `FORMAT JSONCompact` for output.
- By default (false), you'll receive array of values for each row. If you set dataObjects
- to true, every row will become an object with format: `{fieldName: fieldValue, …}`
- * **format**: this is format for data loading with `INSERT` statements.
- * **syncParser**: collect data, then parse entire response. Should be faster, but for
- large datasets all your dataset goes into memory (actually, entire response + entire dataset).
- Default: `false`
- * **omitFormat**: `FORMAT JSONCompact` will be added by default to every query
- which returns dataset. Currently `SELECT|SHOW|DESC|DESCRIBE|EXISTS\s+TABLE`.
- You can change this behaviour by providing this option. In this case you should
- add `FORMAT JSONCompact` by yourself. Should be detected automatically. Default `false`;
- * **readonly**: tells driver to send query with HTTP GET method. Same as [`readonly=1` setting](https://clickhouse.yandex/docs/en/operations/settings/permissions_for_queries/#settings_readonly). [More details](https://clickhouse.yandex/docs/en/interfaces/http/)
+##### Options example
+```javascript
+const ch = new ClickHouse ({
+  host: "clickhouse.msk",
+  queryOptions: {
+    profile: "web",
+    database: "test",
+  },
+  omitFormat: false,
+})
+```
 
 
-### var stream = clickHouse.query (statement, [options], [callback])
+### `const stream = clickHouse.query (query, [options], [callback])`
+Sends a query statement to a server.
 
-Query sends a statement to a server
+##### `options: Options`
+The same as for `constructor`, excluding connection options.
 
-Stream is a regular nodejs object stream, it can be piped to process records.
+##### `callback: (error, result) => void`
+Will be called upon completion.
+
+##### Returns: [`stream: Duplex Stream`](https://nodejs.org/api/stream.html#stream_duplex_and_transform_streams)
+It supports [`.pipe`](https://nodejs.org/api/stream.html#stream_readable_pipe_destination_options) to process records.
 
 Stream events:
-
  * **metadata**: when a column information is parsed,
  * **data**: when a row is available,
  * **error**: something is wrong,
@@ -148,13 +178,27 @@ Stream events:
 After response is processed, you can read a supplemental response data, such as
 row count via `stream.supplemental`.
 
-Options are the same for `query` and `constructor` excluding connection.
-
-Callback is optional and will be called upon completion with
-a standard node `(error, result)` signature.
-
 You should have at least one error handler listening. Via callbacks or via stream errors.
 If you have callback and stream listener, you'll have error notification in both listeners.
+
+```javascript
+const readableStream = fs.createReadStream('./x.csv')
+const writableStream = ch.query ('INSERT INTO table FORMAT CSV', (err, result) => {})
+readableStream.pipe(writableStream)
+```
+
+```javascript
+const readableStream = ch.query ('SELECT * FROM system.contributors FORMAT JSON', (err, result) => {})
+const writableStream = fs.createWriteStream('./contributors.json')
+readableStream.pipe(writableStream)
+```
+
+### `clickHouse.ping (callback)`
+Sends an empty query and check if it `"Ok.\n"`.
+Doesn't requires authorization.
+
+##### `callback: (error, result) => void` Required
+Will be called upon completion.
 
 ## Promise interface
 
@@ -170,9 +214,14 @@ This means that large query result in promise interface:
 Use it only for queries where resulting data size is is known and extremely small.<br/>
 The good cases to use it is `DESCRIBE TABLE` or `EXISTS TABLE`
 
-### clickHouse.querying (statement, [options]).then (…)
-Return `promise`, that will be resolved with entire query result.
+### `clickHouse.querying (query, [options])`
 This is an alias to `ch.query(query, {syncParser: true}, (error, data) => {})`
+##### `options: Options`
+The same as for `constructor`, excluding connection options.
+
+##### Returns: `Promise`
+Will be resolved with entire query result.
+
 
 Usage:
 ```js
@@ -182,13 +231,10 @@ Usage:
   // [ { name: 'number', type: 'UInt64', default_type: '', default_expression: '' } ]
 ```
 
-### clickHouse.ping (function (err, response) {})
-
-Sends an empty query and check if it "Ok.\n"
-
-### clickHouse.pinging ().then (…)
-
+### `clickHouse.pinging ()`
 Promise interface for `ping`
+
+##### Returns: `Promise`
 
 Notes
 -----
@@ -198,7 +244,7 @@ Notes
 `INSERT` can be used for bulk data loading. There is a 2 formats easily implementable
 with javascript: CSV and TabSeparated/TSV.
 
-CSV is useful for loading from file, thus you can read and pipe into clickhouse
+CSV is useful for loading from file, thus you can read and `.pipe` into clickhouse
 file contents. To activate CSV parsing you should set `inputFormat` option to `CSV`
 for driver or query (BEWARE: not works as expected, use TSV):
 
