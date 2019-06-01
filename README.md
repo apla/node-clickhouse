@@ -10,68 +10,47 @@ npm install @apla/clickhouse
 
 Synopsis
 ---
-
+Basic API:
 ```javascript
-var ch = new ClickHouse ({host: clickhouse.host, port: 8123, user, password});
-// or
-var ch = new ClickHouse (clickhouse.host);
+const ch = new ClickHouse({host: clickhouse.host, port: 8123, user, password})
 
 // do the query, callback interface, not recommended for selects
-ch.query ("CREATE DATABASE clickhouse_test", function (err, data) {
-
-});
+ch.query("CREATE DATABASE test", (err, data) => {})
 
 // promise interface (requires 'util.promisify' for node < 8, Promise shim for node < 4)
-ch.querying ("CREATE DATABASE clickhouse_test").then (…);
-
+ch.querying("CREATE DATABASE test").then (…)
+```
+Selecting large dataset:
+```javascript
 // it is better to use stream interface to fetch select results
-var stream = ch.query ("SELECT 1");
+const stream = ch.query("SELECT * FROM system.numbers LIMIT 10000000")
 
-// or collect records yourself
-var rows = [];
+stream.on('metadata', (columns) => { /* do something with column list */ })
 
-stream.on ('metadata', function (columns) {
-  // do something with column list
+let rows = [];
+stream.on('data', (row) => rows.push(row))
+
+stream.on('error', (err) => { /* handler error */ })
+
+stream.on('end', () => {
+  console.log(
+    rows.length,
+    stream.supplemental.rows,
+    stream.supplemental.rows_before_limit_at_least, // how many rows in result are set without windowing
+  )
 });
-
-stream.on ('data', function (row) {
-  rows.push (row);
-});
-
-stream.on ('error', function (err) {
-  // TODO: handler error
-});
-
-stream.on ('end', function () {
-  // all rows are collected, let's verify count
-  assert (rows.length === stream.supplemental.rows);
-  // how many rows in result are set without windowing:
-  console.log ('rows in result set', stream.supplemental.rows_before_limit_at_least);
-});
-
+```
+Inserting large dataset:
+```javascript
 // insert from file
 
-var tsvStream = fs.createReadStream ('data.tsv');
-var clickhouseStream = clickHouse.query (statement, {inputFormat: 'TSV'});
+var tsvStream = fs.createReadStream('data.tsv')
+var clickhouseStream = clickHouse.query('INSERT INTO table FORMAT TSV')
 
-tsvStream.pipe (clickhouseStream);
-
-// insert row data
-var clickhouseStream = clickHouse.query (statement, {inputFormat: 'TSV'}, function (err) {
-
-  console.log ('Insert complete!');
-
-});
-
-// data will be formatted for you
-clickhouseStream.write ([1, 2.22, "erbgwerg", new Date ()]);
-
-// prepare data yourself
-clickhouseStream.write ("1\t2.22\terbgwerg\t2017-07-17 17:17:17");
-
-clickhouse.end ();
-
+tsvStream.pipe(clickhouseStream)
 ```
+
+
 
 API
 ---
@@ -293,3 +272,20 @@ In this case whole JSON response from the server will be read into memory,
 then parsed into memory hogging your CPU. Default parser will parse server response
 line by line and emits events. This is slower, but much more memory and CPU efficient
 for larger datasets.
+
+## Examples
+Insert single row of data:
+```javascript
+var clickhouseStream = clickHouse.query(`INSERT INTO table FORMAT TSV`, (err) => {
+  console.log('Insert complete!')
+})
+
+// data will be formatted for you
+clickhouseStream.write([1, 2.22, "erbgwerg", new Date ()])
+
+// prepare data yourself
+clickhouseStream.write("1\t2.22\terbgwerg\t2017-07-17 17:17:17")
+
+clickhouse.end()
+
+```
