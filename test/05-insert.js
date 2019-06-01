@@ -327,6 +327,59 @@ describe ("insert data", function () {
         stream.end ();
     });
 
+		it ("creates a table 5", function () {
+			var ch = new ClickHouse ({host: host, port: port, queryOptions: {database: dbName}});
+			return ch.querying ("CREATE TABLE t5 (a UInt8, b Float32, x Nullable(String), z DateTime) ENGINE = Memory");
+		});
+
+		it ("inserts csv with FORMAT clause", function (done) {
+			var ch = new ClickHouse ({host: host, port: port});
+			var stream = ch.query ("INSERT INTO t5 FORMAT CSV", {queryOptions: {database: dbName}}, function (err, result) {
+				assert (!err, err);
+
+				ch.query ("SELECT * FROM t5", {syncParser: true, queryOptions: {database: dbName}}, function (err, result) {
+
+					assert.equal (result.data[0][0], 0);
+					assert.equal (result.data[0][1], 0);
+					assert.equal (result.data[0][2], null);
+					assert.equal (result.data[0][3], '1970-01-02 00:00:00');
+					assert.equal (result.data[1][0], 1);
+					assert.equal (result.data[1][1], 1.5);
+					assert.equal (result.data[1][2], '1');
+					assert.equal (result.data[1][3], '2050-01-01 00:00:00');
+
+					done ();
+
+				});
+			});
+			stream.write('0,0,\\N,"1970-01-02 00:00:00"\n1,1.5,"1","2050-01-01 00:00:00"')
+			stream.end ();
+		});
+
+		it ("select data with FORMAT clause", function () {
+			var ch = new ClickHouse ({host: host, port: port});
+			return ch.querying("SELECT * FROM t5 FORMAT Values", {queryOptions: {database: dbName}})
+				.then((data) => {
+					assert.equal (data, `(0,0,NULL,'1970-01-02 00:00:00'),(1,1.5,'1','2050-01-01 00:00:00')`)
+				})
+		});
+
+		it ("select data with GET method and FORMAT clause", function () {
+			var ch = new ClickHouse ({host: host, port: port, useQueryString: true});
+			return ch.querying("SELECT * FROM t5 FORMAT Values", {queryOptions: {database: dbName}})
+				.then((data) => {
+					assert.equal (data, `(0,0,NULL,'1970-01-02 00:00:00'),(1,1.5,'1','2050-01-01 00:00:00')`)
+				})
+		});
+
+		it ("select data with GET method and format option", function () {
+			var ch = new ClickHouse ({host: host, port: port, useQueryString: true});
+			return ch.querying("SELECT * FROM t5", {queryOptions: {database: dbName}, format: 'Values'})
+				.then((data) => {
+					assert.equal (data, `(0,0,NULL,'1970-01-02 00:00:00'),(1,1.5,'1','2050-01-01 00:00:00')`)
+				})
+		});
+
 	after (function (done) {
 
 		if (!dbCreated)

@@ -183,7 +183,7 @@ function httpRequest (reqParams, reqData, cb) {
 			stream.emit ('error', e);
 		return cb && cb (e);
   });
-  
+
   req.on('timeout', function (e) {
     req.abort();
   })
@@ -296,12 +296,13 @@ ClickHouse.prototype.query = function (chQuery, options, cb) {
 
 			reqData.finalized = false;
 
+			// Newline is recomended https://clickhouse.yandex/docs/en/query_language/insert_into/#insert
+			formatEnding = '\n';
 			if (!chQuery.match (/FORMAT/i)) {
 				// simplest format to use, only need to escape \t, \\ and \n
 				options.format = options.format || 'TabSeparated';
-				formatEnding = ' '; // clickhouse don't like data immediately after format name
 			} else {
-
+				options.omitFormat = true;
 			}
 		}
 	} else {
@@ -315,7 +316,8 @@ ClickHouse.prototype.query = function (chQuery, options, cb) {
 		queryObject.query = chQuery + ((options.omitFormat) ? '' : ' FORMAT ' + options.format + formatEnding);
 		reqParams.method = 'GET';
 	} else {
-		reqData.query = chQuery + (options.omitFormat ? '' : ' FORMAT ' + options.format + formatEnding);
+		// Trimmed query still may require `formatEnding` when FORMAT clause specified in query
+		reqData.query = chQuery + (options.omitFormat ? '' : ' FORMAT ' + options.format) + formatEnding;
 		reqParams.method = 'POST';
 	}
 
