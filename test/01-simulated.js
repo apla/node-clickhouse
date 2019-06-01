@@ -107,7 +107,7 @@ describe ("simulated queries", function () {
 	});
 
 	it ("selects using callback", function (done) {
-		var ch = new ClickHouse ({host: host, port: port, useQueryString: true});
+		var ch = new ClickHouse ({host: host, port: port, readonly: true});
 		ch.query ("SELECT 1", {syncParser: true}, function (err, result) {
 			assert (!err);
 			assert (result.meta, "result should be Object with `data` key to represent rows");
@@ -118,7 +118,7 @@ describe ("simulated queries", function () {
 	});
 
 	it ("selects numbers using callback", function (done) {
-		var ch = new ClickHouse ({host: host, port: port, useQueryString: true});
+		var ch = new ClickHouse ({host: host, port: port, readonly: true});
 		ch.query ("SELECT number FROM system.numbers LIMIT 10", {syncParser: true}, function (err, result) {
 			assert (!err);
 			assert (result.data, "result should be Object with `data` key to represent rows");
@@ -135,7 +135,7 @@ describe ("simulated queries", function () {
 	});
 
 	it ("selects numbers using stream", function (done) {
-		var ch = new ClickHouse ({host: host, port: port, useQueryString: true});
+		var ch = new ClickHouse ({host: host, port: port, readonly: true});
 		var rows = [];
 		var stream = ch.query ("SELECT number FROM system.numbers LIMIT 10", function (err, result) {
 			assert (!err);

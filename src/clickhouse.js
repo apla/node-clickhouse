@@ -183,7 +183,7 @@ function httpRequest (reqParams, reqData, cb) {
 			stream.emit ('error', e);
 		return cb && cb (e);
   });
-  
+
   req.on('timeout', function (e) {
     req.abort();
   })
@@ -248,6 +248,7 @@ ClickHouse.prototype.query = function (chQuery, options, cb) {
 	options.omitFormat  = options.omitFormat  || this.options.omitFormat  || false;
 	options.dataObjects = options.dataObjects || this.options.dataObjects || false;
 	options.format      = options.format      || this.options.format      || null;
+	options.readonly    = options.readonly    || this.options.readonly    || false;
 
 	// we're adding `queryOptions` passed for constructor if any
 	var queryObject = Object.assign ({}, this.options.queryOptions, options.queryOptions);
@@ -311,7 +312,7 @@ ClickHouse.prototype.query = function (chQuery, options, cb) {
 	reqData.format = options.format;
 
 	// use query string to submit ClickHouse query — useful to mock CH server
-	if (this.options.useQueryString) {
+	if (options.readonly) {
 		queryObject.query = chQuery + ((options.omitFormat) ? '' : ' FORMAT ' + options.format + formatEnding);
 		reqParams.method = 'GET';
 	} else {

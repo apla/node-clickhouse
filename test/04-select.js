@@ -10,7 +10,7 @@ describe ("select data from database", function () {
 		dbCreated = false;
 
 	it ("selects using callback", function (done) {
-		var ch = new ClickHouse ({host: host, port: port, useQueryString: true});
+		var ch = new ClickHouse ({host: host, port: port, readonly: true});
 		ch.query ("SELECT 1", {syncParser: true}, function (err, result) {
 			assert (!err);
 			assert (result.meta, "result should be Object with `data` key to represent rows");
@@ -30,7 +30,7 @@ describe ("select data from database", function () {
 	});
 
 	it ("selects numbers using callback", function (done) {
-		var ch = new ClickHouse ({host: host, port: port, useQueryString: true});
+		var ch = new ClickHouse ({host: host, port: port, readonly: true});
 		ch.query ("SELECT number FROM system.numbers LIMIT 10", {syncParser: true}, function (err, result) {
 			assert (!err);
 			assert (result.meta, "result should be Object with `data` key to represent rows");
@@ -47,7 +47,7 @@ describe ("select data from database", function () {
 	});
 
 	it ("selects numbers using promise should already have parsed data", function () {
-		var ch = new ClickHouse ({host: host, port: port, useQueryString: true});
+		var ch = new ClickHouse ({host: host, port: port, readonly: true});
 		return ch.querying ("SELECT number FROM system.numbers LIMIT 10").then (function (result) {
 			assert (result.meta, "result should be Object with `data` key to represent rows");
 			assert (result.data, "result should be Object with `meta` key to represent column info");
@@ -63,7 +63,7 @@ describe ("select data from database", function () {
 	});
 
 	it ("selects numbers as dataObjects using promise", function () {
-		var ch = new ClickHouse ({host: host, port: port, useQueryString: true, dataObjects: true});
+		var ch = new ClickHouse ({host: host, port: port, readonly: true, dataObjects: true});
 		return ch.querying ("SELECT number FROM system.numbers LIMIT 10").then (function (result) {
 			assert (result.meta, "result should be Object with `data` key to represent rows");
 			assert (result.data, "result should be Object with `meta` key to represent column info");
