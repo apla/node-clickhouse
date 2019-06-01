@@ -64,6 +64,11 @@ describe ("real server", function () {
 		});
 	});
 
+	it ("authorises by credentials", function () {
+		var ch = new ClickHouse ({host: host, port: port, user: 'default', password: ''});
+		return ch.querying ("SELECT 1");
+	});
+
 	it ("selects from system columns", function (done) {
 		var ch = new ClickHouse ({host: host, port: port});
 		ch.query ("SELECT * FROM system.columns", function (err, result) {
