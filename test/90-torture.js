@@ -62,7 +62,7 @@ describe ("torturing", function () {
 
 		this.timeout (timeout);
 
-		var ch = new ClickHouse ({host: host, port: port, useQueryString: true});
+		var ch = new ClickHouse ({host: host, port: port, readonly: true});
 		var queryCount = 0;
 		var symbolsTransferred = 0;
 
@@ -95,7 +95,7 @@ describe ("torturing", function () {
 
 		this.timeout (timeout);
 
-		var ch = new ClickHouse ({host: host, port: port, useQueryString: true});
+		var ch = new ClickHouse ({host: host, port: port, readonly: true});
 		var queryCount = 0;
 		var symbolsTransferred = 0;
 
@@ -127,7 +127,7 @@ describe ("torturing", function () {
 
 		this.timeout (timeout);
 
-		var ch = new ClickHouse ({host: host, port: port, useQueryString: true});
+		var ch = new ClickHouse ({host: host, port: port, readonly: true});
 		var queryCount = 0;
 		var symbolsTransferred = 0;
 
@@ -159,7 +159,7 @@ describe ("torturing", function () {
 
 		this.timeout (timeout);
 
-		var ch = new ClickHouse ({host: host, port: port, useQueryString: true});
+		var ch = new ClickHouse ({host: host, port: port, readonly: true});
 		var queryCount = 0;
 		var symbolsTransferred = 0;
 
@@ -191,7 +191,7 @@ describe ("torturing", function () {
 
 		this.timeout (timeout);
 
-		var ch = new ClickHouse ({host: host, port: port, useQueryString: true});
+		var ch = new ClickHouse ({host: host, port: port, readonly: true});
 		var queryCount = 0;
 		var symbolsTransferred = 0;
 
@@ -223,7 +223,7 @@ describe ("torturing", function () {
 
 		this.timeout (timeout);
 
-		var ch = new ClickHouse ({host: host, port: port, useQueryString: true});
+		var ch = new ClickHouse ({host: host, port: port, readonly: true});
 		var queryCount = 0;
 		var symbolsTransferred = 0;
 

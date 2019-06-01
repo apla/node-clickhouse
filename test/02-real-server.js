@@ -51,7 +51,7 @@ describe ("real server", function () {
 	});
 
 	it ("returns error", function (done) {
-		var ch = new ClickHouse ({host: host, port: port, useQueryString: true});
+		var ch = new ClickHouse ({host: host, port: port, readonly: true});
 		var stream = ch.query ("ABCDEFGHIJKLMN", {syncParser: true}, function (err, result) {
 			// assert (err);
 			// done ();

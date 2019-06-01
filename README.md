@@ -85,7 +85,8 @@ var options = {
     profile: "web",
     database: "test"
   },
-  omitFormat: false
+  omitFormat: false,
+  readonly: true,
 };
 
 var clickHouse = new ClickHouse (options);
@@ -128,6 +129,7 @@ Driver options:
  which returns dataset. Currently `SELECT|SHOW|DESC|DESCRIBE|EXISTS\s+TABLE`.
  You can change this behaviour by providing this option. In this case you should
  add `FORMAT JSONCompact` by yourself. Should be detected automatically. Default `false`;
+ * **readonly**: tells driver to send query with HTTP GET method. Same as [`readonly=1` setting](https://clickhouse.yandex/docs/en/operations/settings/permissions_for_queries/#settings_readonly). [More details](https://clickhouse.yandex/docs/en/interfaces/http/)
 
 
 ### var stream = clickHouse.query (statement, [options], [callback])

@@ -14,7 +14,7 @@ describe ("error parsing", function () {
 		dbCreated = false;
 
 	it ("will not throw on http error", function (done) {
-		var ch = new ClickHouse ({host: host, port: 59999, useQueryString: true});
+		var ch = new ClickHouse ({host: host, port: 59999, readonly: true});
 		var stream = ch.query ("ABCDEFGHIJKLMN", {syncParser: true}, function (err, result) {
 			// assert (err);
 			// done ();
@@ -26,7 +26,7 @@ describe ("error parsing", function () {
 	});
 
 	it ("returns error for unknown sql", function (done) {
-		var ch = new ClickHouse ({host: host, port: port, useQueryString: true});
+		var ch = new ClickHouse ({host: host, port: port, readonly: true});
 		var stream = ch.query ("ABCDEFGHIJKLMN", {syncParser: true}, function (err, result) {
 			// assert (err);
 			// done ();
@@ -44,7 +44,7 @@ describe ("error parsing", function () {
 	});
 
 	it ("returns error with line/col for sql with garbage", function (done) {
-		var ch = new ClickHouse ({host: host, port: port, useQueryString: true});
+		var ch = new ClickHouse ({host: host, port: port, readonly: true});
 		var stream = ch.query ("CREATE\n\t\tABCDEFGHIJKLMN", {syncParser: true}, function (err, result) {
 			// assert (err);
 			// done ();
@@ -62,7 +62,7 @@ describe ("error parsing", function () {
 	});
 
 	it ("returns error for empty sql", function (done) {
-		var ch = new ClickHouse ({host: host, port: port, useQueryString: true});
+		var ch = new ClickHouse ({host: host, port: port, readonly: true});
 
 		function countCallbacks (err) {
 			countCallbacks.count = (countCallbacks.count || 0) + 1;
@@ -94,10 +94,9 @@ describe ("error parsing", function () {
 	});
 
 	it ("returns error for unknown table", function (done) {
-		var ch = new ClickHouse ({host: host, port: port, useQueryString: true});
+		var ch = new ClickHouse ({host: host, port: port, readonly: true});
 		var stream = ch.query ("SELECT * FROM xxx", {syncParser: true}, function (err, result) {
-			// assert (err);
-			// done ();
+			assert (err);
 		});
 
 		stream.on ('error', function (err) {
@@ -110,6 +109,13 @@ describe ("error parsing", function () {
 
 			done();
 		});
+	});
+
+	it ("returns error for writing in readonly mode", function (done) {
+		var ch = new ClickHouse ({host: host, port: port});
+		ch.querying ("CREATE TABLE xxx (a UInt8) ENGINE = Memory()", {readonly: true})
+			.then(() => done('Should fail in readonly mode'))
+			.catch(() => done())
 	});
 
 
