@@ -99,18 +99,9 @@ You should have at least one error handler listening. Via query callback or via 
 After response is processed, you can read a supplemental response data from it, such as row count.
 
 
-
-```javascript
-const readableStream = fs.createReadStream('./x.csv')
-const writableStream = ch.query ('INSERT INTO table FORMAT CSV', (err, result) => {})
-readableStream.pipe(writableStream)
-```
-
-```javascript
-const readableStream = ch.query ('SELECT * FROM system.contributors FORMAT JSON', (err, result) => {})
-const writableStream = fs.createWriteStream('./contributors.json')
-readableStream.pipe(writableStream)
-```
+Examples:
+- [Selecting with stream](README.md#selecting-with-stream)
+- [Inserting with stream](README.md#inserting-with-stream)
 
 ### `clickHouse.ping (callback)`
 Sends an empty query.
@@ -123,12 +114,12 @@ Will be called upon completion.
 
 Promise interface **is not recommended** for `INSERT` and `SELECT` queries.
 * `INSERT` can't do bulk load data with promise interface.
-* `SELECT` will collect entire query result in the memory. See [Memory size](README.md#memory-size).
+* `SELECT` will collect entire query result in the memory. See the [Memory size](README.md#memory-size) section.
 
 With promise interface query result are parsed synchronously.
 This means that large query result in promise interface:
-* Will synchronously block JS thread/event loop
-* May lead to memory leaks in your app
+* Will synchronously block JS thread/event loop.
+* May lead to memory leaks in your app due peak GC loads.
 
 Use it only for queries where resulting data size is is known and extremely small.<br/>
 The good cases to use it is `DESCRIBE TABLE` or `EXISTS TABLE`
@@ -214,6 +205,23 @@ line by line and emits events. This is slower, but much more memory and CPU effi
 for larger datasets.
 
 ## Examples
+#### Selecting with stream
+```javascript
+const readableStream = ch.query (
+  'SELECT * FROM system.contributors FORMAT JSONEachRow',
+  (err, result) => {},
+)
+const writableStream = fs.createWriteStream('./contributors.json')
+readableStream.pipe(writableStream)
+```
+
+#### Inserting with stream
+```javascript
+const readableStream = fs.createReadStream('./x.csv')
+const writableStream = ch.query ('INSERT INTO table FORMAT CSV', (err, result) => {})
+readableStream.pipe(writableStream)
+```
+
 #### Insert single row of data:
 ```javascript
 const ch = new ClickHouse(options)
