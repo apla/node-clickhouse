@@ -41,6 +41,7 @@ API
 | `dataObjects`    |          | `false`       | By default (`false`), you'll receive array of values for each row. <br /> If you set `dataObjects: true`, every row will become an object with format: `{ fieldName: fieldValue, … }`. <br /> Alias to `format: 'JSON'`.
 | `format`         |          | `JSONCompact` | Adds the `FORMAT` statement for query if it did not have one. <br /> Specifies format of [selected](https://clickhouse.yandex/docs/en/query_language/select/#format-clause) or [inserted](https://clickhouse.yandex/docs/en/query_language/insert_into/#insert) data. <br /> See ["Formats for input and output data"](https://clickhouse.yandex/docs/en/interfaces/formats/#formats) to find out possible values.
 | `queryOptions`   |          |               | Object, can contain any ClickHouse option from [Settings](https://clickhouse.yandex/docs/en/operations/settings/index.html), [Restrictions](https://clickhouse.yandex/docs/en/operations/settings/query_complexity/) and [Permissions](https://clickhouse.yandex/docs/en/operations/settings/permissions_for_queries/). <br /> See [example](README.md#settings-for-connection).
+| `readonly`       |          | `false`       | Tells driver to send query with HTTP GET method. Same as [`readonly=1` setting](https://clickhouse.yandex/docs/en/operations/settings/permissions_for_queries/#settings_readonly). [More details](https://clickhouse.yandex/docs/en/interfaces/http/).
 | `timeout`, <br /> `headers`, <br /> `agent`, <br /> `localAddress`, <br /> `servername`, <br /> etc… |   |   |  Any [http.request](https://nodejs.org/api/http.html#http_http_request_options_callback) or [https.request](https://nodejs.org/api/https.html#https_https_request_options_callback) options are also available.
 
 <!--
@@ -58,6 +59,7 @@ This are dangerous for using by end user
 const ch = new ClickHouse({
   host: "clickhouse.msk",
   dataObjects: true,
+  readonly: true,
   queryOptions: {
     profile: "web",
     database: "test",
