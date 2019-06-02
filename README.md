@@ -199,7 +199,7 @@ for larger datasets.
 <br />
 
 ## Examples
-#### Selecting with stream
+#### Selecting with stream:
 ```javascript
 const readableStream = ch.query(
   'SELECT * FROM system.contributors FORMAT JSONEachRow',
@@ -209,7 +209,7 @@ const writableStream = fs.createWriteStream('./contributors.json')
 readableStream.pipe(writableStream)
 ```
 
-#### Inserting with stream
+#### Inserting with stream:
 ```javascript
 const readableStream = fs.createReadStream('./x.csv')
 const writableStream = ch.query('INSERT INTO table FORMAT CSV', (err, result) => {})
@@ -233,7 +233,7 @@ writableStream.end()
 
 ```
 
-#### Selecting large dataset:</summary>
+#### Selecting large dataset:
 
 ```javascript
 const ch = new ClickHouse(options)
@@ -291,15 +291,15 @@ const stream = ch.query('INSERT INTO table FORMAT TSV', {
 })
 ```
 
-#### Promise interface
+#### Promise interface:
 ```js
-  const ch = new ClickHouse(options)
-  // Check connection to server. Doesn't requires authorization.
-  await ch.pinging()
+const ch = new ClickHouse(options)
+// Check connection to server. Doesn't requires authorization.
+await ch.pinging()
 ```
 ```js
-  const { data } = await ch.querying("SELECT 1")
-  // [ [ 1 ] ]
-  const { data } = await ch.querying("DESCRIBE TABLE system.numbers", { dataObjects: true })
-  // [ { name: 'number', type: 'UInt64', default_type: '', default_expression: '' } ]
+const { data } = await ch.querying("SELECT 1")
+// [ [ 1 ] ]
+const { data } = await ch.querying("DESCRIBE TABLE system.numbers", { dataObjects: true })
+// [ { name: 'number', type: 'UInt64', default_type: '', default_expression: '' } ]
 ```
