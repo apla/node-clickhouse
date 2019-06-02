@@ -104,6 +104,8 @@ Doesn't requires authorization.
 ##### `callback: (error, result) => void`
 Will be called upon completion.
 
+<br />
+
 ## Promise interface
 
 Promise interface **is not recommended** for `INSERT` and `SELECT` queries.
@@ -140,10 +142,12 @@ Promise interface for `ping`
 
 ##### Returns: `Promise`
 
-Notes
+<br />
+
+How it works
 -----
 
-## Bulk data loading with `INSERT` statements
+### Bulk data loading with `INSERT` statements
 
 `INSERT` can be used for bulk data loading. There is a 2 formats easily implementable
 with javascript: CSV and TabSeparated/TSV.
@@ -180,7 +184,7 @@ stream.write(object) // Do write as many times as possible
 stream.end() // And don't forget to finish insert query
 ```
 
-## Memory size
+### Memory size
 
 You can read all the records into memory in single call like this:
 
@@ -197,6 +201,8 @@ In this case whole JSON response from the server will be read into memory,
 then parsed into memory hogging your CPU. Default parser will parse server response
 line by line and emits events. This is slower, but much more memory and CPU efficient
 for larger datasets.
+
+<br />
 
 ## Examples
 #### Selecting with stream
