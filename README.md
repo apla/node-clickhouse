@@ -127,7 +127,7 @@ The good cases to use it is `DESCRIBE TABLE` or `EXISTS TABLE`
 ### `clickHouse.querying(query, [options])`
 This is an alias to `ch.query(query, { syncParser: true }, (error, data) => {})`
 ##### `options: Options`
-The same as for `constructor`, excluding connection options.
+The same [`Options`](README.md#options), excluding connection options.
 
 ##### Returns: `Promise`
 Will be resolved with entire query result.
