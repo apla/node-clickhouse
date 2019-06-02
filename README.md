@@ -1,17 +1,11 @@
-Database interface for http://clickhouse.yandex
+Simple and powerful interface for [ClickHouse](https://clickhouse.yandex/) [![travis](https://travis-ci.org/apla/node-clickhouse.svg)](https://travis-ci.org/apla/node-clickhouse) [![codecov](https://codecov.io/gh/apla/node-clickhouse/branch/master/graph/badge.svg)](https://codecov.io/gh/apla/node-clickhouse)
 ===
-
 ```sh
 npm install @apla/clickhouse
 ```
 
-[![travis](https://travis-ci.org/apla/node-clickhouse.svg)](https://travis-ci.org/apla/node-clickhouse)
-[![codecov](https://codecov.io/gh/apla/node-clickhouse/branch/master/graph/badge.svg)](https://codecov.io/gh/apla/node-clickhouse)
-
 Synopsis
 ---
-Basic API:
-
 ```javascript
 const ClickHouse = require('@apla/clickhouse')
 const ch = new ClickHouse({ host, port, user, password })
