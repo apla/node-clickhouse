@@ -121,24 +121,18 @@ Use it only for queries where resulting data size is is known and extremely smal
 The good cases to use it is `DESCRIBE TABLE` or `EXISTS TABLE`
 
 ### `clickHouse.querying(query, [options])`
-This is an alias to `ch.query(query, { syncParser: true }, (error, data) => {})`
+Similar to `ch.query(query)` but collects entire response in memory and resolves with complete query result. <br />
+See the [Memory size](README.md#memory-size) section.
 ##### `options: Options`
 The same [`Options`](README.md#options), excluding connection options.
 
 ##### Returns: `Promise`
 Will be resolved with entire query result.
 
-
-Usage:
-```js
-  const { data } = ch.querying("SELECT 1").then((result) => console.log(result.data))
-  // [ [ 1 ] ]
-  const { data } = await ch.querying("DESCRIBE TABLE system.numbers", { dataObjects: true })
-  // [ { name: 'number', type: 'UInt64', default_type: '', default_expression: '' } ]
-```
+Example of [promise interface](README.md#promise-interface).
 
 ### `clickHouse.pinging()`
-Promise interface for `ping`
+Promise interface for [`.ping`](README.md#clickhousepingcallback).
 
 ##### Returns: `Promise`
 
@@ -295,4 +289,17 @@ const stream = ch.query('INSERT INTO table FORMAT TSV', {
     insert_quorum: 2,
   },
 })
+```
+
+#### Promise interface
+```js
+  const ch = new ClickHouse(options)
+  // Check connection to server. Doesn't requires authorization.
+  await ch.pinging()
+```
+```js
+  const { data } = await ch.querying("SELECT 1")
+  // [ [ 1 ] ]
+  const { data } = await ch.querying("DESCRIBE TABLE system.numbers", { dataObjects: true })
+  // [ { name: 'number', type: 'UInt64', default_type: '', default_expression: '' } ]
 ```
