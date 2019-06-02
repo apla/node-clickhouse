@@ -1,7 +1,7 @@
 Database interface for http://clickhouse.yandex
 ===
 
-```
+```sh
 npm install @apla/clickhouse
 ```
 
@@ -13,6 +13,7 @@ Synopsis
 Basic API:
 
 ```javascript
+const ClickHouse = require('@apla/clickhouse')
 const ch = new ClickHouse({ host, port, user, password })
 
 const stream = ch.query("SELECT 1", (err, data) => {})
@@ -22,50 +23,10 @@ stream.pipe(process.stdout)
 // (requires 'util.promisify' for node < 8, Promise shim for node < 4)
 await ch.querying("CREATE DATABASE test")
 ```
-
-<details>
-  <summary>Selecting large dataset:</summary>
-  <p>
-
-    ```javascript
-    // it is better to use stream interface to fetch select results
-    const stream = ch.query("SELECT * FROM system.numbers LIMIT 10000000")
-
-    stream.on('metadata', (columns) => { /* do something with column list */ })
-
-    let rows = [];
-    stream.on('data', (row) => rows.push(row))
-
-    stream.on('error', (err) => { /* handler error */ })
-
-    stream.on('end', () => {
-      console.log(
-        rows.length,
-        stream.supplemental.rows,
-        stream.supplemental.rows_before_limit_at_least, // how many rows in result are set without windowing
-      )
-    });
-    ```
-  </p>
-</details>
-
-
-<details>
-  <summary>Inserting large dataset:</summary>
-  <p>
-
-    ```javascript
-    // insert from file
-
-    var tsvStream = fs.createReadStream('data.tsv')
-    var clickhouseStream = clickHouse.query('INSERT INTO table FORMAT TSV')
-
-    tsvStream.pipe(clickhouseStream)
-    ```
-
-  </p>
-</details>
-
+Examples:
+- [Selecting large dataset](README.md#selecting-large-dataset)
+- [Inserting large dataset](README.md#inserting-large-dataset)
+- [Inserting single row](README.md#insert-single-row-of-data)
 
 
 API
@@ -290,18 +251,53 @@ line by line and emits events. This is slower, but much more memory and CPU effi
 for larger datasets.
 
 ## Examples
-Insert single row of data:
+#### Insert single row of data:
 ```javascript
-var clickhouseStream = clickHouse.query(`INSERT INTO table FORMAT TSV`, (err) => {
+const ch = new ClickHouse(options)
+const writableStream = ch.query(`INSERT INTO table FORMAT TSV`, (err) => {
   console.log('Insert complete!')
 })
 
 // data will be formatted for you
-clickhouseStream.write([1, 2.22, "erbgwerg", new Date ()])
+writableStream.write([1, 2.22, "erbgwerg", new Date ()])
 
 // prepare data yourself
-clickhouseStream.write("1\t2.22\terbgwerg\t2017-07-17 17:17:17")
+writableStream.write("1\t2.22\terbgwerg\t2017-07-17 17:17:17")
 
-clickhouse.end()
+writableStream.end()
 
+```
+
+#### Selecting large dataset:</summary>
+
+```javascript
+const ch = new ClickHouse(options)
+// it is better to use stream interface to fetch select results
+const stream = ch.query("SELECT * FROM system.numbers LIMIT 10000000")
+
+stream.on('metadata', (columns) => { /* do something with column list */ })
+
+let rows = [];
+stream.on('data', (row) => rows.push(row))
+
+stream.on('error', (err) => { /* handler error */ })
+
+stream.on('end', () => {
+  console.log(
+    rows.length,
+    stream.supplemental.rows,
+    stream.supplemental.rows_before_limit_at_least, // how many rows in result are set without windowing
+  )
+});
+```
+
+
+#### Inserting large dataset:
+```javascript
+const ch = new ClickHouse(options)
+// insert from file
+var tsvStream = fs.createReadStream('data.tsv')
+var clickhouseStream = ch.query('INSERT INTO table FORMAT TSV')
+
+tsvStream.pipe(clickhouseStream)
 ```
