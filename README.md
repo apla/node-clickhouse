@@ -44,7 +44,7 @@ API
 | `timeout`, <br /> `headers`, <br /> `agent`, <br /> `localAddress`, <br /> `servername`, <br /> etc… |   |   |  Any [http.request](https://nodejs.org/api/http.html#http_http_request_options_callback) or [https.request](https://nodejs.org/api/https.html#https_https_request_options_callback) options are also available.
 
 <!--
-This are mostly unuseful for end user
+This are dangerous for using by end user
 
 | `syncParser`     |          | `false`       | **Not recommended for large amounts of data!** <br /> Collects all data, then parse entire response. <br /> May be faster, but for large datasets all your dataset goes into memory (actually, entire response + entire dataset).
 # Might be completely replaced with promise interface.
@@ -57,11 +57,11 @@ This are mostly unuseful for end user
 ```javascript
 const ch = new ClickHouse({
   host: "clickhouse.msk",
+  dataObjects: true,
   queryOptions: {
     profile: "web",
     database: "test",
   },
-  omitFormat: false,
 })
 ```
 
@@ -185,7 +185,7 @@ You can read all the records into memory in single call like this:
 ```javascript
 
 var ch = new ClickHouse({ host: host, port: port })
-ch.query("SELECT number FROM system.numbers LIMIT 10", { syncParser: true }, (err, result) => {
+ch.querying("SELECT number FROM system.numbers LIMIT 10", (err, result) => {
   // result will contain all the data you need
 })
 
