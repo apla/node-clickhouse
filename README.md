@@ -149,8 +149,8 @@ Notes
 with javascript: CSV and TabSeparated/TSV.
 
 CSV is useful for loading from file, thus you can read and `.pipe` into clickhouse
-file contents. To activate CSV parsing you should set `inputFormat` option to `CSV`
-for driver or query (BEWARE: not works as expected, use TSV):
+file contents. <br />
+To activate CSV parsing you should set `format` driver option or query `FORMAT` statement to `CSV`:
 
 ```javascript
 
