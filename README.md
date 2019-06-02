@@ -11,44 +11,60 @@ npm install @apla/clickhouse
 Synopsis
 ---
 Basic API:
+
 ```javascript
-const ch = new ClickHouse({host: clickhouse.host, port: 8123, user, password})
+const ch = new ClickHouse({ host, port, user, password })
 
-// do the query, callback interface, not recommended for selects
-ch.query("CREATE DATABASE test", (err, data) => {})
+const stream = ch.query("SELECT 1", (err, data) => {})
+stream.pipe(process.stdout)
 
-// promise interface (requires 'util.promisify' for node < 8, Promise shim for node < 4)
-ch.querying("CREATE DATABASE test").then (…)
+// promise interface, not recommended for selects
+// (requires 'util.promisify' for node < 8, Promise shim for node < 4)
+await ch.querying("CREATE DATABASE test")
 ```
-Selecting large dataset:
-```javascript
-// it is better to use stream interface to fetch select results
-const stream = ch.query("SELECT * FROM system.numbers LIMIT 10000000")
 
-stream.on('metadata', (columns) => { /* do something with column list */ })
+<details>
+  <summary>Selecting large dataset:</summary>
+  <p>
 
-let rows = [];
-stream.on('data', (row) => rows.push(row))
+    ```javascript
+    // it is better to use stream interface to fetch select results
+    const stream = ch.query("SELECT * FROM system.numbers LIMIT 10000000")
 
-stream.on('error', (err) => { /* handler error */ })
+    stream.on('metadata', (columns) => { /* do something with column list */ })
 
-stream.on('end', () => {
-  console.log(
-    rows.length,
-    stream.supplemental.rows,
-    stream.supplemental.rows_before_limit_at_least, // how many rows in result are set without windowing
-  )
-});
-```
-Inserting large dataset:
-```javascript
-// insert from file
+    let rows = [];
+    stream.on('data', (row) => rows.push(row))
 
-var tsvStream = fs.createReadStream('data.tsv')
-var clickhouseStream = clickHouse.query('INSERT INTO table FORMAT TSV')
+    stream.on('error', (err) => { /* handler error */ })
 
-tsvStream.pipe(clickhouseStream)
-```
+    stream.on('end', () => {
+      console.log(
+        rows.length,
+        stream.supplemental.rows,
+        stream.supplemental.rows_before_limit_at_least, // how many rows in result are set without windowing
+      )
+    });
+    ```
+  </p>
+</details>
+
+
+<details>
+  <summary>Inserting large dataset:</summary>
+  <p>
+
+    ```javascript
+    // insert from file
+
+    var tsvStream = fs.createReadStream('data.tsv')
+    var clickhouseStream = clickHouse.query('INSERT INTO table FORMAT TSV')
+
+    tsvStream.pipe(clickhouseStream)
+    ```
+
+  </p>
+</details>
 
 
 
