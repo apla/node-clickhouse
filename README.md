@@ -32,7 +32,7 @@ Examples:
 API
 ---
 
-### `new ClickHouse (options: Options)`
+### `new ClickHouse(options: Options)`
 
 #### `Options`
 
@@ -44,7 +44,7 @@ API
 | `pathname`       |          | `/`           | Pathname of ClickHouse server.
 | `port`           |          | `8123`        | Server port number.
 | `protocol`       |          | `'http:'`     | `'https:'` or `'http:'`.
-| `dataObjects`    |          | `false`       | By default (`false`), you'll receive array of values for each row. <br /> If you set `dataObjects: true`, every row will become an object with format: `{fieldName: fieldValue, …}`. <br /> Alias to `format: 'JSON'`.
+| `dataObjects`    |          | `false`       | By default (`false`), you'll receive array of values for each row. <br /> If you set `dataObjects: true`, every row will become an object with format: `{ fieldName: fieldValue, … }`. <br /> Alias to `format: 'JSON'`.
 | `format`         |          | `JSONCompact` | Adds the `FORMAT` statement for query if it did not have one. <br /> Specifies format of [selected](https://clickhouse.yandex/docs/en/query_language/select/#format-clause) or [inserted](https://clickhouse.yandex/docs/en/query_language/insert_into/#insert) data. <br /> See ["Formats for input and output data"](https://clickhouse.yandex/docs/en/interfaces/formats/#formats) to find out possible values.
 | `queryOptions`   |          |               | Object, can contain any ClickHouse option from [Settings](https://clickhouse.yandex/docs/en/operations/settings/index.html), [Restrictions](https://clickhouse.yandex/docs/en/operations/settings/query_complexity/) and [Permissions](https://clickhouse.yandex/docs/en/operations/settings/permissions_for_queries/). <br /> See [example](README.md#settings-for-connection).
 | `timeout`, <br /> `headers`, <br /> `agent`, <br /> `localAddress`, <br /> `servername`, <br /> etc… |   |   |  Any [http.request](https://nodejs.org/api/http.html#http_http_request_options_callback) or [https.request](https://nodejs.org/api/https.html#https_https_request_options_callback) options are also available.
@@ -61,7 +61,7 @@ This are mostly unuseful for end user
 
 ##### Options example:
 ```javascript
-const ch = new ClickHouse ({
+const ch = new ClickHouse({
   host: "clickhouse.msk",
   queryOptions: {
     profile: "web",
@@ -103,7 +103,7 @@ Examples:
 - [Selecting with stream](README.md#selecting-with-stream)
 - [Inserting with stream](README.md#inserting-with-stream)
 
-### `clickHouse.ping (callback)`
+### `clickHouse.ping(callback)`
 Sends an empty query.
 Doesn't requires authorization.
 
@@ -124,8 +124,8 @@ This means that large query result in promise interface:
 Use it only for queries where resulting data size is is known and extremely small.<br/>
 The good cases to use it is `DESCRIBE TABLE` or `EXISTS TABLE`
 
-### `clickHouse.querying (query, [options])`
-This is an alias to `ch.query(query, {syncParser: true}, (error, data) => {})`
+### `clickHouse.querying(query, [options])`
+This is an alias to `ch.query(query, { syncParser: true }, (error, data) => {})`
 ##### `options: Options`
 The same as for `constructor`, excluding connection options.
 
@@ -135,13 +135,13 @@ Will be resolved with entire query result.
 
 Usage:
 ```js
-  ch.querying ("SELECT 1").then((result) => console.log(result.data))
+  const { data } = ch.querying("SELECT 1").then((result) => console.log(result.data))
   // [ [ 1 ] ]
-  ch.querying ("DESCRIBE TABLE system.numbers", {dataObjects: true}).then((result) => console.log(result.data))
+  const { data } = await ch.querying("DESCRIBE TABLE system.numbers", { dataObjects: true })
   // [ { name: 'number', type: 'UInt64', default_type: '', default_expression: '' } ]
 ```
 
-### `clickHouse.pinging ()`
+### `clickHouse.pinging()`
 Promise interface for `ping`
 
 ##### Returns: `Promise`
@@ -160,10 +160,10 @@ for driver or query (BEWARE: not works as expected, use TSV):
 
 ```javascript
 
-var csvStream = fs.createReadStream ('data.csv');
-var clickhouseStream = ch.query (statement, {format: CSV});
+var csvStream = fs.createReadStream('data.csv')
+var clickhouseStream = ch.query(statement, { format: CSV })
 
-csvStream.pipe (clickhouseStream);
+csvStream.pipe(clickhouseStream)
 
 ```
 
@@ -180,10 +180,10 @@ ClickHouse also supports [JSONEachRow](https://clickhouse.yandex/docs/en/formats
 which can be useful to insert javascript objects if you have such recordset.
 
 ```js
-const stream = ch.query (statement, {format: 'JSONEachRow'})
+const stream = ch.query(statement, { format: 'JSONEachRow' })
 
-stream.write (object) // Do write as many times as possible
-stream.end () // And don't forget to finish insert query
+stream.write(object) // Do write as many times as possible
+stream.end() // And don't forget to finish insert query
 ```
 
 ## Memory size
@@ -192,10 +192,10 @@ You can read all the records into memory in single call like this:
 
 ```javascript
 
-var ch = new ClickHouse ({host: host, port: port});
-ch.query ("SELECT number FROM system.numbers LIMIT 10", {syncParser: true}, function (err, result) {
+var ch = new ClickHouse({ host: host, port: port })
+ch.query("SELECT number FROM system.numbers LIMIT 10", { syncParser: true }, (err, result) => {
   // result will contain all the data you need
-});
+})
 
 ```
 
@@ -207,7 +207,7 @@ for larger datasets.
 ## Examples
 #### Selecting with stream
 ```javascript
-const readableStream = ch.query (
+const readableStream = ch.query(
   'SELECT * FROM system.contributors FORMAT JSONEachRow',
   (err, result) => {},
 )
@@ -218,7 +218,7 @@ readableStream.pipe(writableStream)
 #### Inserting with stream
 ```javascript
 const readableStream = fs.createReadStream('./x.csv')
-const writableStream = ch.query ('INSERT INTO table FORMAT CSV', (err, result) => {})
+const writableStream = ch.query('INSERT INTO table FORMAT CSV', (err, result) => {})
 readableStream.pipe(writableStream)
 ```
 
@@ -230,7 +230,7 @@ const writableStream = ch.query(`INSERT INTO table FORMAT TSV`, (err) => {
 })
 
 // data will be formatted for you
-writableStream.write([1, 2.22, "erbgwerg", new Date ()])
+writableStream.write([1, 2.22, "erbgwerg", new Date()])
 
 // prepare data yourself
 writableStream.write("1\t2.22\terbgwerg\t2017-07-17 17:17:17")
@@ -248,7 +248,7 @@ const stream = ch.query("SELECT * FROM system.numbers LIMIT 10000000")
 
 stream.on('metadata', (columns) => { /* do something with column list */ })
 
-let rows = [];
+let rows = []
 stream.on('data', (row) => rows.push(row))
 
 stream.on('error', (err) => { /* handler error */ })
@@ -259,7 +259,7 @@ stream.on('end', () => {
     stream.supplemental.rows,
     stream.supplemental.rows_before_limit_at_least, // how many rows in result are set without windowing
   )
-});
+})
 ```
 
 #### Inserting large dataset:
