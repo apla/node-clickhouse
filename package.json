@@ -34,6 +34,7 @@
     "mocha": "^2.5.3",
     "nyc": "^10.2.0"
   },
+  "typings": "typings.d.ts",
   "engines": {
     "node": ">=0.10"
   }
