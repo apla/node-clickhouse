@@ -12,7 +12,7 @@ Synopsis
 ---
 
 ```javascript
-var ch = new ClickHouse ({host: clickhouse.host, port: 8123, user, password});
+var ch = new ClickHouse ({host: clickhouse.host, port: 8123, auth: "user:password"});
 // or
 var ch = new ClickHouse (clickhouse.host);
 
