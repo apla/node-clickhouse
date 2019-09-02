@@ -100,7 +100,7 @@ for [http.request](https://nodejs.org/api/http.html#http_http_request_options_ca
  * **user**:     authentication user, optional
  * **password**:     authentication password, optional
  * **host**:     host to connect, can contain port name
- * **pathname**: pathname of ClickHouse server or `/` if omited,
+ * **pathname**: pathname of ClickHouse server or `/` if omitted,
  * **port**:     port number,
  * **protocol**: "https:" or "http:", default "http:".
 
