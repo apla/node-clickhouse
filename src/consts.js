@@ -1,13 +1,16 @@
-exports.NATIVE_HTTP_OPTIONS = [
-  'protocol',
-  'auth',
-  'host',
-  'hostname',
-  'port',
-  'path',
-  'localAddress',
-  'headers',
-  'agent',
-  'createConnection',
-  'timeout',
-]
+exports.LIBRARY_SPECIFIC_OPTIONS = new Set([
+  // "Auth" shorthand
+  'user',
+  'password',
+
+  // Database settings go to query string
+  'queryOptions',
+
+  // Driver options
+  'dataObjects',
+  'format',
+  'syncParser',
+  'omitFormat',
+  'readonly',
+  'useQueryString'
+]);
