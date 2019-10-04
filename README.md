@@ -35,7 +35,7 @@ API
 | `host`           | ✓        |               | Host to connect.
 | `user`           |          |               | Authentication user.
 | `password`       |          |               | Authentication password.
-| `pathname`       |          | `/`           | Pathname of ClickHouse server.
+| `path` (`pathname`) |       | `/`           | Pathname of ClickHouse server.
 | `port`           |          | `8123`        | Server port number.
 | `protocol`       |          | `'http:'`     | `'https:'` or `'http:'`.
 | `dataObjects`    |          | `false`       | By default (`false`), you'll receive array of values for each row. <br /> If you set `dataObjects: true`, every row will become an object with format: `{ fieldName: fieldValue, … }`. <br /> Alias to `format: 'JSON'`.
