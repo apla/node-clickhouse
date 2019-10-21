@@ -27,7 +27,9 @@
     "url": "https://github.com/apla/node-clickhouse/issues"
   },
   "homepage": "https://github.com/apla/node-clickhouse#readme",
-  "dependencies": {},
+  "dependencies": {
+    "@types/node": "*"
+  },
   "devDependencies": {
     "bluebird": "^3.5.0",
     "codecov": "^2.2.0",
