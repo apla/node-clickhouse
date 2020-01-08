@@ -222,6 +222,9 @@ readableStream.pipe(writableStream)
 ```javascript
 const ch = new ClickHouse(options)
 const writableStream = ch.query(`INSERT INTO table FORMAT TSV`, (err) => {
+  if (err) {
+    console.error(err)
+  }
   console.log('Insert complete!')
 })
 
