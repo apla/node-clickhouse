@@ -30,7 +30,7 @@
   "dependencies": {},
   "devDependencies": {
     "bluebird": "^3.5.0",
-    "codecov": "^2.2.0",
+    "codecov": "^3.6.5",
     "mocha": "^2.5.3",
     "nyc": "^10.2.0"
   },
