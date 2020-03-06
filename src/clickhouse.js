@@ -226,9 +226,9 @@ ClickHouse.prototype.getReqParams = function () {
 	}
 
 	if (this.options.hasOwnProperty('user') || this.options.hasOwnProperty('password')) {
-		urlObject.auth = encodeURIComponent(this.options.user || 'default')
+		urlObject.auth = (this.options.user || 'default')
 			+ ':'
-			+ encodeURIComponent(this.options.password || '')
+			+ (this.options.password || '')
 	}
 
 	urlObject.method = 'POST';
