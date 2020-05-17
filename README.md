@@ -78,7 +78,7 @@ SQL query statement.
 The same [`Options`](README.md#options), excluding connection options.
 
 ##### `callback: (error, result) => void`
-Will be called upon completion.
+Will be always called upon completion.
 
 ##### Returns: [`DuplexStream`](https://nodejs.org/api/stream.html#stream_duplex_and_transform_streams)
 It supports [`.pipe`](https://nodejs.org/api/stream.html#stream_readable_pipe_destination_options) to process records. <br/>
@@ -86,10 +86,10 @@ You should have at least one error handler listening. Via query callback or via 
 
 | Stream event | Description
 | ------------ | -----------
-| `metadata`   | When a column information is parsed.
-| `data`       | When a row is available.
-| `end`        | When entire response is processed.
-| `error`      | Query execution finished with error. <br /> If you have both query callback and stream `error` listener, you'll have error notification in both listeners.
+| `'error'`      | Query execution finished with error. <br /> If you have both query `callback` and stream `error` listener, you'll have error notification in both listeners.
+| `'metadata'`   | When a column information is parsed.
+| `'data'`       | When a row is available.
+| `'end'`        | When entire response is processed. <blockquote>Regardless of whether there is an `'end'` listener, the query `callback` are always called.</blockquote> <blockquote>You should always listen to `'data'` event together with `'end'` event. <br/>["The 'end' event will not be emitted unless the data is completely consumed."](https://nodejs.org/api/stream.html#stream_event_end) <br/> If you don't need to handle `'data'` event prefer to use only `callback` or [Promise interface](#promise-interface).</blockquote>
 
 ##### `stream.supplemental`
 After response is processed, you can read a supplemental response data from it, such as row count.
