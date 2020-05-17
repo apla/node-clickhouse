@@ -101,6 +101,7 @@ function httpResponseHandler (stream, reqParams, reqData, cb, response) {
 
 		var contentType = response.headers['content-type'];
 
+		// Early return and stream end in case when content-type means empty body
 		if (response.statusCode === 200 && (
 			!contentType
 			|| contentType.indexOf ('text/plain') === 0
@@ -150,7 +151,6 @@ function httpResponseHandler (stream, reqParams, reqData, cb, response) {
 					stream.push (row);
 				});
 
-				stream.push (null);
 			}
 		} catch (e) {
 			if (!reqData.format || !reqData.format.match (/^(JSON|JSONCompact)$/)) {
@@ -158,9 +158,13 @@ function httpResponseHandler (stream, reqParams, reqData, cb, response) {
 			} else {
 				return errorHandler (e);
 			}
-		}
 
-		cb && cb (null, data);
+		} finally {
+			if (!stream.readableEnded) {
+				stream.push (null);
+				cb && cb (null, data);
+			}
+		}
 	});
 
 }
