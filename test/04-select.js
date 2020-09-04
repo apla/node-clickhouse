@@ -220,4 +220,15 @@ describe ("select data from database", function () {
 			stream.destroy ();
 		});
 	});
+
+	it("select query with WITH clause will produces result formatted ", function (done) {
+		var ch = new ClickHouse({ host: host, port: port, format: "JSON" });
+		ch.query("WITH 10 as pagesize SELECT 1", { syncParser: true }, function (err, result) {
+			assert(!err);
+			assert(result.meta, "result should be Object with `data` key to represent rows");
+			assert(result.data, "result should be Object with `meta` key to represent column info");
+			assert(Object.prototype.toString.call(result.data[0]) === '[object Object]', "data should be formatted JSON" )
+			done();
+		});
+	})
 });
