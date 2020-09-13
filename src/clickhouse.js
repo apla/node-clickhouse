@@ -284,7 +284,7 @@ ClickHouse.prototype.query = function (chQuery, options, cb) {
 	var formatEnding = '';
 
 	// format should be added for data queries
-	if (chQuery.match (/^(?:SELECT|SHOW|DESC|DESCRIBE|EXISTS\s+TABLE)/i)) {
+	if (chQuery.match (/^(?:SELECT|WITH|SHOW|DESC|DESCRIBE|EXISTS\s+TABLE)/i)) {
 		if (!options.format)
 			options.format = options.dataObjects ? 'JSON' : 'JSONCompact';
 	} else if (chQuery.match (/^INSERT/i)) {
