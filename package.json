@@ -2,15 +2,16 @@
   "name": "@apla/clickhouse",
   "version": "1.6.4",
   "description": "Yandex ClickHouse database interface",
-  "main": "src/clickhouse.js",
+  "main": "index.js",
   "scripts": {
-    "legacy-install": "node ./src/legacy-support.js",
     "launch-docker-image": "docker run --rm -d -p 8123:8123 --name clickhouse-server yandex/clickhouse-server",
     "stop-docker-image": "docker stop clickhouse-server",
-    "test": "nyc mocha --recursive ./test -R spec",
+    "test": "nyc mocha --require @babel/polyfill --require @babel/register --recursive ./test -R spec",
     "report": "nyc report --reporter=lcov > coverage.lcov && codecov",
     "simpletest": "mocha --recursive ./test -R spec",
-    "torturetest": "TORTURE=1 mocha -gc --recursive ./test -R spec"
+    "torturetest": "TORTURE=1 mocha -gc --recursive ./test -R spec",
+    "build": "rm -r lib*/; babel src -d lib --source-maps && BABEL_ENV=legacy babel src -d lib-legacy --source-maps",
+    "prepublishOnly": "npm run build"
   },
   "repository": {
     "type": "git",
@@ -27,8 +28,18 @@
     "url": "https://github.com/apla/node-clickhouse/issues"
   },
   "homepage": "https://github.com/apla/node-clickhouse#readme",
-  "dependencies": {},
+  "dependencies": {
+    "core-js": "3"
+  },
+  "optionalDependencies": {
+    "buffer-indexof-polyfill": "^1.0.1"
+  },
   "devDependencies": {
+    "@babel/cli": "^7.4.4",
+    "@babel/core": "^7.4.5",
+    "@babel/polyfill": "^7.4.4",
+    "@babel/preset-env": "^7.4.5",
+    "@babel/register": "^7.4.4",
     "bluebird": "^3.5.0",
     "codecov": "^2.2.0",
     "mocha": "^2.5.3",
