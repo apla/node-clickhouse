@@ -248,6 +248,11 @@ ClickHouse.prototype.query = function (chQuery, options, cb) {
 
 	chQuery = chQuery.trim ();
 
+	// query will be invalid if we append FORMAT after ;
+	if (chQuery.endsWith(';')) {
+		chQuery = chQuery.slice(0, -1);
+	}
+	
 	if (cb === undefined && options && options.constructor === Function) {
 		cb = options;
 		options = undefined;
