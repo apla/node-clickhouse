@@ -284,7 +284,7 @@ ClickHouse.prototype.query = function (chQuery, options, cb) {
 	var formatEnding = '';
 
 	// format should be added for data queries
-	if (chQuery.match (/^(?:SELECT|WITH|SHOW|DESC|DESCRIBE|EXISTS\s+TABLE)/i)) {
+	if (chQuery.match (/^(?:SELECT|WITH|SHOW|WATCH|DESC|DESCRIBE|EXISTS\s+TABLE)/i)) {
 		if (!options.format)
 			options.format = options.dataObjects ? 'JSON' : 'JSONCompact';
 	} else if (chQuery.match (/^INSERT/i)) {
@@ -321,6 +321,11 @@ ClickHouse.prototype.query = function (chQuery, options, cb) {
 		}
 	} else {
 		options.omitFormat = true;
+	}
+
+	// query will be invalid if we append FORMAT after ;
+	if (!options.omitFormat && chQuery.endsWith(';')) {
+		chQuery = chQuery.slice(0, -1);
 	}
 
 	reqData.format = options.format;
