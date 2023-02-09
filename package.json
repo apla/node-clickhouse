@@ -1,11 +1,11 @@
 {
   "name": "@apla/clickhouse",
   "version": "1.6.4",
-  "description": "Yandex ClickHouse database interface",
+  "description": "ClickHouse database interface",
   "main": "src/clickhouse.js",
   "scripts": {
     "legacy-install": "node ./src/legacy-support.js",
-    "launch-docker-image": "docker run --rm -d -p 8123:8123 --name clickhouse-server yandex/clickhouse-server",
+    "launch-docker-image": "docker run --rm -d -p 8123:8123 --name clickhouse-server clickhouse/clickhouse-server",
     "stop-docker-image": "docker stop clickhouse-server",
     "test": "nyc mocha --recursive ./test -R spec",
     "report": "nyc report --reporter=lcov > coverage.lcov && codecov",
