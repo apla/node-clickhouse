@@ -27,13 +27,16 @@
     "url": "https://github.com/apla/node-clickhouse/issues"
   },
   "homepage": "https://github.com/apla/node-clickhouse#readme",
-  "dependencies": {},
+  "dependencies": {
+    "@types/node": "*"
+  },
   "devDependencies": {
     "bluebird": "^3.5.0",
     "codecov": "^2.2.0",
     "mocha": "^2.5.3",
     "nyc": "^10.2.0"
   },
+  "typings": "typings.d.ts",
   "engines": {
     "node": ">=0.10"
   }
